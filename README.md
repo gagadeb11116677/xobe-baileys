@@ -2,91 +2,93 @@
 
 # ⚡ xobe-baileys
 
-### Library WhatsApp (Baileys v7) buat bikin bot — fork bersih dari `ourin-baileys`, tanpa auto-follow channel tersembunyi.
+### Pustaka WhatsApp (Baileys v7) untuk pengembangan bot — fork dari `ourin-baileys` dengan fitur auto-follow channel tersembunyi dihapus.
 
-![version](https://img.shields.io/badge/version-1.0.0-blue?style=for-the-badge)
+![version](https://img.shields.io/badge/version-1.1.1-blue?style=for-the-badge)
 ![license](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)
 ![node](https://img.shields.io/badge/node-%3E%3D20-brightgreen?style=for-the-badge&logo=node.js&logoColor=white)
 ![esm](https://img.shields.io/badge/module-ESM--only-yellow?style=for-the-badge)
-![status](https://img.shields.io/badge/auto--follow-DIHAPUS-success?style=for-the-badge)
+![status](https://img.shields.io/badge/auto--follow-dihapus-success?style=for-the-badge)
 
-**[Install](#-install)** · **[Tutorial dari nol](#-bikin-bot-dari-nol)** · **[Kenapa fork ini ada](#-kenapa-fork-ini-ada)** · **[Contoh fitur](#-contoh-fitur)** · **[Masalah umum](#️-masalah-umum)**
+**[Latar Belakang](#1-latar-belakang)** · **[Instalasi](#3-instalasi)** · **[Panduan Dasar](#4-panduan-dasar)** · **[Referensi API](#6-referensi-api)** · **[Keandalan](#7-utilitas-keandalan)** · **[Pemecahan Masalah](#9-pemecahan-masalah)**
 
 </div>
 
 ---
 
-## 🧭 Kenapa fork ini ada
+## Daftar Isi
 
-> **TL;DR: `xobe-baileys` adalah *fork* biasa, bukan paket yang kena deteksi malware.**
-> `ourin-baileys` (paket asalnya) ditandai berbahaya oleh npm karena nyimpen kode
-> tersembunyi yang bikin bot auto-follow channel WhatsApp tanpa izin. Fork ini
-> ngambil kode fungsionalnya aja dan **buang bagian auto-follow itu**.
+1. [Latar Belakang](#1-latar-belakang)
+2. [Perbandingan dengan ourin-baileys](#2-perbandingan-dengan-ourin-baileys)
+3. [Instalasi](#3-instalasi)
+4. [Panduan Dasar](#4-panduan-dasar)
+5. [Autentikasi](#5-autentikasi)
+6. [Referensi API](#6-referensi-api)
+   - [6.1 Pesan Teks & Media](#61-pesan-teks--media)
+   - [6.2 Tombol Interaktif (Button Message)](#62-tombol-interaktif-button-message)
+   - [6.3 Manajemen Grup](#63-manajemen-grup)
+   - [6.4 Status (Presence) & Profil](#64-status-presence--profil)
+   - [6.5 Channel (Newsletter)](#65-channel-newsletter)
+7. [Utilitas Keandalan](#7-utilitas-keandalan)
+   - [7.1 Cache Metadata Grup](#71-cache-metadata-grup)
+   - [7.2 Resolusi JID vs LID](#72-resolusi-jid-vs-lid)
+   - [7.3 Antrean Pesan (Rate Limiting)](#73-antrean-pesan-rate-limiting)
+   - [7.4 Auto-Clear Session yang Korup](#74-auto-clear-session-yang-korup)
+   - [7.5 Reconnect dengan Backoff](#75-reconnect-dengan-backoff)
+   - [7.6 Logger](#76-logger)
+8. [Migrasi dari ourin-baileys](#8-migrasi-dari-ourin-baileys)
+9. [Pemecahan Masalah](#9-pemecahan-masalah)
+10. [Keamanan](#10-keamanan)
+11. [Lisensi & Atribusi](#11-lisensi--atribusi)
 
-Silsilahnya:
+---
+
+## 1. Latar Belakang
+
+`ourin-baileys`, paket yang menjadi basis fork ini, ditandai sebagai paket berbahaya oleh npm karena mengandung kode tersembunyi yang membuat bot secara otomatis mengikuti (follow) channel WhatsApp tertentu tanpa persetujuan pengguna. `xobe-baileys` adalah fork dari kode fungsional ourin-baileys dengan bagian auto-follow tersebut dihapus sepenuhnya.
 
 ```
 Baileys (WhiskeySockets, resmi)
    │
    ▼
-ourin-baileys (mod pihak ketiga)  ──►  🚫 ditandai malware di npm (auto-follow tersembunyi)
+ourin-baileys (modifikasi pihak ketiga)  ──►  ditandai berbahaya oleh npm (auto-follow tersembunyi)
    │
    ▼
-xobe-baileys (fork ini)           ──►  ✅ auto-follow dihapus, nama paket diganti
+xobe-baileys (fork ini)                  ──►  auto-follow dihapus, nama paket diganti
 ```
 
-| | `ourin-baileys` 9.0.21 | `xobe-baileys` |
-|---|:---:|:---:|
-| 🚫 Auto-follow channel pas konek | Ada (aktif default) | **Dihapus** |
-| 🔒 JID channel hardcoded di kode | Ada | **Dihapus** |
-| 🗺️ File source map (`.map`) | Ada | **Dihapus** |
-| 📦 Status di npm | Ditandai malware | Nggak dipublish ke npm, cuma GitHub |
-| ⚙️ Fitur bot (interactive msg, album, VoIP, dll) | Ada | **Sama persis** |
+Dokumentasi teknis mengenai bagian kode yang dihapus, serta cakupan audit yang sudah dan belum dilakukan, tersedia di [`NOTICE.md`](./NOTICE.md), [`SECURITY.md`](./SECURITY.md), dan [`CHANGELOG.md`](./CHANGELOG.md). Pengguna dianjurkan untuk memverifikasi klaim ini secara independen; lihat [Bagian 10](#10-keamanan).
 
-Detail teknis lengkap (bagian kode mana yang dihapus, dan apa yang **belum**
-diaudit) ada di [`NOTICE.md`](./NOTICE.md), [`SECURITY.md`](./SECURITY.md), dan
-[`CHANGELOG.md`](./CHANGELOG.md). Jangan cuma percaya klaim di README ini —
-[cek sendiri](#-cara-ngecek-nggak-ada-auto-follow), kodenya kebuka semua.
+## 2. Perbandingan dengan ourin-baileys
 
----
+| Aspek | `ourin-baileys` 9.0.21 | `xobe-baileys` |
+|---|---|---|
+| Auto-follow channel saat koneksi terbuka | Ada, aktif secara default | Dihapus |
+| JID channel yang di-hardcode dalam kode | Ada | Dihapus |
+| File source map (`.map`) | Ada | Dihapus |
+| Status di registry npm | Ditandai berbahaya | Tidak dipublikasikan ke npm, hanya tersedia via GitHub |
+| Fitur inti (interactive message, album, VoIP, dsb.) | Tersedia | Tersedia, tidak diubah |
+| Utilitas tambahan (cache grup, resolusi LID, rate limit, dsb.) | Tidak tersedia | Tersedia sejak v1.0.0–1.1.1 |
 
-## 📋 Daftar isi
+## 3. Instalasi
 
-- [🧭 Kenapa fork ini ada](#-kenapa-fork-ini-ada)
-- [✅ Syarat](#-syarat)
-- [📦 Install](#-install)
-- [🚀 Bikin bot dari nol](#-bikin-bot-dari-nol)
-- [🔢 Login pakai pairing code](#-login-pakai-pairing-code)
-- [⚡ Optimasi: cache group metadata](#-optimasi-cache-group-metadata)
-- [🧩 Contoh fitur](#-contoh-fitur)
-- [🔁 Pindah dari ourin-baileys](#-pindah-dari-ourin-baileys)
-- [🧱 Kalau project lu CommonJS](#-kalau-project-lu-commonjs)
-- [🔍 Cara ngecek nggak ada auto-follow](#-cara-ngecek-nggak-ada-auto-follow)
-- [🛠️ Masalah umum](#️-masalah-umum)
-- [⚠️ Catatan penting](#️-catatan-penting)
-- [📄 Lisensi](#-lisensi)
+### 3.1 Persyaratan
 
----
-
-## ✅ Syarat
-
-| Butuh | Kenapa |
+| Komponen | Keterangan |
 |---|---|
-| Node.js **20+** | Minimum version yang didukung. Cek: `node -v` |
-| Git | Buat install langsung dari GitHub |
-| `"type": "module"` di `package.json` | Library ini **ESM-only** ([ada cara buat CommonJS](#-kalau-project-lu-commonjs)) |
+| Node.js 20 atau lebih baru | Periksa dengan `node -v` |
+| Git | Diperlukan karena instalasi dilakukan langsung dari GitHub |
+| `"type": "module"` pada `package.json` | Pustaka ini bersifat ESM-only ([lihat alternatif untuk CommonJS](#kalau-project-lu-commonjs)) |
 
----
+### 3.2 Perintah instalasi
 
-## 📦 Install
-
-Dari GitHub (library ini nggak dipublish ke npm, jadi **harus** lewat GitHub):
+Karena tidak dipublikasikan ke npm, instalasi dilakukan langsung dari repositori GitHub:
 
 ```bash
 npm install github:gagadeb11116677/xobe-baileys
 ```
 
-Atau tulis manual di `package.json`:
+Atau dideklarasikan secara manual pada `package.json`:
 
 ```json
 {
@@ -97,64 +99,50 @@ Atau tulis manual di `package.json`:
 }
 ```
 
-lalu:
+### 3.3 Dependensi opsional
+
+| Paket | Fungsi |
+|---|---|
+| `pino` | Logger (sudah menjadi dependensi internal, tapi disarankan diinstal eksplisit jika dikustomisasi) |
+| `qrcode-terminal` | Menampilkan QR login di terminal |
+| `sharp` atau `jimp` | Pembuatan thumbnail gambar |
+| `link-preview-js` | Pratinjau tautan otomatis |
+| `audio-decode` | Pemrosesan audio |
+| `ffmpeg` (binari sistem) | Thumbnail video, konversi media |
 
 ```bash
-npm install
+npm install pino qrcode-terminal sharp link-preview-js audio-decode
 ```
-
-<details>
-<summary>📎 Paket tambahan (opsional, install sesuai kebutuhan)</summary>
-
-```bash
-npm install pino qrcode-terminal   # logger + QR di terminal
-npm install sharp                  # thumbnail gambar (atau jimp)
-npm install link-preview-js        # preview link otomatis
-npm install audio-decode           # proses audio
-```
-
-Buat thumbnail video, install juga `ffmpeg` di sistem lu.
-
-</details>
 
 ---
 
-## 🚀 Bikin bot dari nol
+## 4. Panduan Dasar
 
-<details open>
-<summary><b>1️⃣ Bikin folder & project</b></summary>
+Langkah berikut membangun bot WhatsApp minimal dari awal.
+
+**Langkah 1 — Inisialisasi proyek**
 
 ```bash
-mkdir bot-gua
-cd bot-gua
+mkdir bot-saya && cd bot-saya
 npm init -y
 ```
 
-</details>
-
-<details open>
-<summary><b>2️⃣ Set ESM di package.json</b></summary>
+**Langkah 2 — Aktifkan mode ESM** pada `package.json`:
 
 ```json
 {
-  "name": "bot-gua",
+  "name": "bot-saya",
   "type": "module"
 }
 ```
 
-</details>
-
-<details open>
-<summary><b>3️⃣ Install dependency</b></summary>
+**Langkah 3 — Instal dependensi**
 
 ```bash
 npm install github:gagadeb11116677/xobe-baileys pino qrcode-terminal
 ```
 
-</details>
-
-<details open>
-<summary><b>4️⃣ Bikin <code>index.js</code></b></summary>
+**Langkah 4 — Buat `index.js`**
 
 ```js
 import makeWASocket, {
@@ -177,32 +165,24 @@ async function startBot() {
     syncFullHistory: false,
   });
 
-  // simpen session tiap ada perubahan
   sock.ev.on("creds.update", saveCreds);
 
   sock.ev.on("connection.update", ({ connection, lastDisconnect, qr }) => {
     if (qr) qrcode.generate(qr, { small: true });
-
-    if (connection === "open") console.log("✅ Konek!");
-
+    if (connection === "open") console.log("Terhubung.");
     if (connection === "close") {
       const code = lastDisconnect?.error?.output?.statusCode;
       if (code !== DisconnectReason.loggedOut) startBot();
-      else console.log("❌ Logout. Hapus folder session lalu login ulang.");
+      else console.log("Sesi keluar (logout). Hapus folder session dan login ulang.");
     }
   });
 
   sock.ev.on("messages.upsert", async ({ messages }) => {
     const msg = messages[0];
     if (!msg?.message || msg.key.fromMe) return;
-
-    const text =
-      msg.message.conversation ||
-      msg.message.extendedTextMessage?.text ||
-      "";
-
+    const text = msg.message.conversation || msg.message.extendedTextMessage?.text || "";
     if (text === ".ping") {
-      await sock.sendMessage(msg.key.remoteJid, { text: "Pong! 🏓" });
+      await sock.sendMessage(msg.key.remoteJid, { text: "Pong." });
     }
   });
 }
@@ -210,28 +190,27 @@ async function startBot() {
 startBot();
 ```
 
-</details>
-
-<details open>
-<summary><b>5️⃣ Jalanin & scan QR</b></summary>
+**Langkah 5 — Jalankan**
 
 ```bash
 node index.js
 ```
 
-Scan QR yang muncul di terminal pakai WhatsApp: **Perangkat tertaut → Tautkan perangkat**.
-Kalau udah muncul `✅ Konek!`, kirim `.ping` ke nomor itu — harusnya dibales `Pong! 🏓`.
+Pindai kode QR yang tampil di terminal melalui WhatsApp (**Perangkat Tertaut → Tautkan Perangkat**). Setelah status `Terhubung.` muncul, kirim `.ping` ke nomor tersebut untuk menguji.
 
-> 🔒 Folder `session` isinya data login bot. Jangan dibagiin ke siapa pun dan jangan
-> di-upload ke GitHub (udah ke-ignore lewat `.gitignore`).
-
-</details>
+> Folder `session` berisi kredensial login bot. Jangan dibagikan kepada pihak lain dan jangan diunggah ke repositori publik (sudah tercakup dalam `.gitignore`).
 
 ---
 
-## 🔢 Login pakai pairing code
+## 5. Autentikasi
 
-Nggak mau scan QR? Pakai kode 8 karakter:
+### 5.1 Login dengan kode QR
+
+Ditunjukkan pada [Bagian 4](#4-panduan-dasar) di atas.
+
+### 5.2 Login dengan kode pairing
+
+Alternatif tanpa pemindaian QR, menggunakan kode delapan karakter:
 
 ```js
 const sock = makeWASocket({
@@ -242,105 +221,256 @@ const sock = makeWASocket({
 
 sock.ev.on("connection.update", async ({ connection }) => {
   if (connection === "connecting" && !sock.authState.creds.registered) {
-    const code = await sock.requestPairingCode("6281234567890"); // nomor bot
-    console.log("Pairing code:", code);
+    const code = await sock.requestPairingCode("6281234567890"); // nomor bot, tanpa tanda + dan tanpa spasi
+    console.log("Kode pairing:", code);
   }
 });
 ```
 
-Di WhatsApp: **Perangkat tertaut → Tautkan perangkat → Tautkan dengan nomor telepon**,
-lalu masukin kodenya.
-
-Contoh lengkap siap pakai: [`examples/pairing-code.js`](./examples/pairing-code.js)
+Pada WhatsApp: **Perangkat Tertaut → Tautkan Perangkat → Tautkan dengan nomor telepon**, lalu masukkan kode tersebut. Contoh lengkap tersedia pada [`examples/pairing-code.js`](./examples/pairing-code.js).
 
 ---
 
-## ⚡ Optimasi: cache group metadata
+## 6. Referensi API
 
-Tiap kirim pesan ke grup, library butuh tau daftar participant grup itu (buat
-enkripsi), jadi defaultnya query `groupMetadata` ke WhatsApp **tiap kali kirim**.
-Kalau bot lu sering kirim ke grup yang sama berkali-kali, ini query yang kebuang
-percuma. `makeCachedGroupMetadata()` nambahin cache in-memory ber-TTL buat ini.
+Seluruh fungsi berikut dipanggil melalui objek `sock` hasil `makeWASocket()`. Variabel `jid` merujuk pada `msg.key.remoteJid` (untuk pesan masuk) atau JID tujuan yang dibentuk melalui `toJid()` (lihat [7.2](#72-resolusi-jid-vs-lid)).
+
+### 6.1 Pesan Teks & Media
+
+```js
+// Teks
+await sock.sendMessage(jid, { text: "Pesan teks." });
+
+// Gambar
+await sock.sendMessage(jid, { image: { url: "./gambar.jpg" }, caption: "Keterangan." });
+
+// Video
+await sock.sendMessage(jid, { video: { url: "./video.mp4" }, caption: "Keterangan." });
+
+// Dokumen
+await sock.sendMessage(jid, { document: { url: "./berkas.pdf" }, mimetype: "application/pdf", fileName: "berkas.pdf" });
+
+// Album (beberapa media sekaligus)
+await sock.sendMessage(jid, {
+  albumMessage: [
+    { image: { url: "./foto1.jpg" }, caption: "Foto 1" },
+    { image: { url: "./foto2.jpg" }, caption: "Foto 2" },
+  ],
+});
+
+// Membalas pesan
+await sock.sendMessage(jid, { text: "Balasan." }, { quoted: msg });
+```
+
+### 6.2 Tombol Interaktif (Button Message)
+
+Tombol pada WhatsApp modern dikirim melalui `interactiveMessage`. Setiap elemen `buttons` memiliki `name` yang menentukan jenis tombol.
+
+**Quick reply, tautan, dan salin kode dalam satu pesan:**
+
+```js
+await sock.sendMessage(jid, {
+  interactiveMessage: {
+    title: "Judul Pesan",
+    footer: "xobe-baileys",
+    header: "Pilih salah satu opsi berikut",
+    buttons: [
+      {
+        name: "quick_reply",
+        buttonParamsJson: JSON.stringify({ display_text: "Menu", id: ".menu" }),
+      },
+      {
+        name: "cta_url",
+        buttonParamsJson: JSON.stringify({ display_text: "Buka Situs", url: "https://example.com" }),
+      },
+      {
+        name: "cta_copy",
+        buttonParamsJson: JSON.stringify({ display_text: "Salin Kode", copy_code: "KODE123" }),
+      },
+    ],
+  },
+});
+```
+
+**Menu daftar (list/single_select):**
+
+```js
+await sock.sendMessage(jid, {
+  interactiveMessage: {
+    title: "Pilih Kategori",
+    footer: "xobe-baileys",
+    header: "Menu Bot",
+    buttons: [{
+      name: "single_select",
+      buttonParamsJson: JSON.stringify({
+        title: "Buka Menu",
+        sections: [{
+          title: "Peralatan",
+          rows: [
+            { title: "Stiker", id: ".sticker" },
+            { title: "Teks ke Suara", id: ".tts" },
+          ],
+        }],
+      }),
+    }],
+  },
+});
+```
+
+**Dengan gambar header:** tambahkan properti `image: { url: "..." }` pada level `interactiveMessage`, sejajar dengan `title`.
+
+**Menangani balasan tombol**, pada handler `messages.upsert`:
+
+```js
+sock.ev.on("messages.upsert", async ({ messages }) => {
+  const msg = messages[0];
+  const buttonId =
+    msg.message?.interactiveResponseMessage?.nativeFlowResponseMessage?.paramsJson;
+  if (buttonId) {
+    const { id } = JSON.parse(buttonId);
+    // id berisi nilai yang didefinisikan pada properti "id" tombol terkait
+  }
+});
+```
+
+### 6.3 Manajemen Grup
+
+| Fungsi | Deskripsi | Contoh |
+|---|---|---|
+| `groupCreate(subject, participants)` | Membuat grup baru | `await sock.groupCreate("Nama Grup", ["628xxx@s.whatsapp.net"])` |
+| `groupMetadata(jid)` | Mengambil metadata grup (nama, anggota, admin, dsb.) | `const meta = await sock.groupMetadata(groupJid)` |
+| `groupUpdateSubject(jid, subject)` | Mengubah nama grup | `await sock.groupUpdateSubject(groupJid, "Nama Baru")` |
+| `groupParticipantsUpdate(jid, participants, action)` | Menambah/mengeluarkan/mempromosikan anggota. `action`: `"add"`, `"remove"`, `"promote"`, `"demote"` | `await sock.groupParticipantsUpdate(groupJid, [userJid], "add")` |
+| `groupSettingUpdate(jid, setting)` | Mengubah pengaturan grup. `setting`: `"announcement"` (hanya admin yang dapat mengirim), `"not_announcement"`, `"locked"` (hanya admin yang dapat mengubah info), `"unlocked"` | `await sock.groupSettingUpdate(groupJid, "announcement")` |
+| `groupInviteCode(jid)` | Mengambil kode undangan grup | `const code = await sock.groupInviteCode(groupJid)` |
+| `groupLeave(jid)` | Keluar dari grup | `await sock.groupLeave(groupJid)` |
+| `groupFetchAllParticipating()` | Mengambil seluruh grup yang diikuti bot | `const groups = await sock.groupFetchAllParticipating()` |
+
+**Contoh — menyebut (mention) seluruh anggota grup:**
+
+```js
+const metadata = await sock.groupMetadata(groupJid);
+const participants = metadata.participants.map((p) => p.id);
+
+await sock.sendMessage(groupJid, {
+  text: participants.map((p) => `@${p.split("@")[0]}`).join(" "),
+  mentions: participants,
+});
+```
+
+> Pada beberapa kasus, `participants.map((p) => p.id)` dapat mengembalikan JID dalam format LID (`@lid`), bukan format nomor telepon standar (`@s.whatsapp.net`), yang menyebabkan mention tidak mengarah ke kontak yang benar. Lihat [7.2](#72-resolusi-jid-vs-lid) untuk solusinya.
+
+### 6.4 Status (Presence) & Profil
+
+| Fungsi | Deskripsi |
+|---|---|
+| `sendPresenceUpdate(type, jid?)` | Mengubah status kehadiran. `type`: `"available"`, `"unavailable"`, `"composing"` (mengetik), `"recording"` (merekam suara), `"paused"` |
+| `updateProfileStatus(status)` | Mengubah teks status profil (bio) akun bot |
+| `fetchStatus(jid)` | Mengambil teks status profil kontak lain |
+
+```js
+// Menampilkan indikator "sedang mengetik" selama beberapa detik
+await sock.sendPresenceUpdate("composing", jid);
+await new Promise((r) => setTimeout(r, 2000));
+await sock.sendPresenceUpdate("paused", jid);
+
+// Mengubah status profil bot
+await sock.updateProfileStatus("Bot aktif 24 jam.");
+```
+
+### 6.5 Channel (Newsletter)
+
+Fungsi ini **hanya** dijalankan apabila dipanggil secara eksplisit oleh kode bot; tidak ada mekanisme otomatis di dalam xobe-baileys yang memanggilnya tanpa instruksi.
+
+```js
+const info = await sock.cekIDSaluran("https://whatsapp.com/channel/xxxxx");
+console.log(info.name, info.subscribers);
+
+await sock.newsletterFollow("1203630000000000@newsletter");
+await sock.newsletterUnfollow("1203630000000000@newsletter");
+```
+
+Daftar fungsi lain di luar cakupan dokumen ini (komunitas, VoIP, rich response, dsb.) tersedia pada [`docs/README-ourin-original.md`](./docs/README-ourin-original.md), dengan catatan dokumen tersebut masih menyebut nama paket `ourin-baileys` pada contoh importnya.
+
+---
+
+## 7. Utilitas Keandalan
+
+Bagian ini mendokumentasikan fungsi tambahan yang tidak tersedia pada ourin-baileys maupun Baileys resmi, ditambahkan khusus pada fork ini.
+
+### 7.1 Cache Metadata Grup
+
+Setiap pengiriman pesan ke grup secara default memicu permintaan `groupMetadata` ke server WhatsApp (diperlukan untuk enkripsi ke seluruh anggota). Pada bot dengan volume pengiriman tinggi ke grup yang sama, hal ini menjadi permintaan yang berulang secara tidak perlu.
 
 ```js
 import makeWASocket, { useMultiFileAuthState, makeCachedGroupMetadata } from "xobe-baileys";
 
 const { state, saveCreds } = await useMultiFileAuthState("./session");
-const groupCache = makeCachedGroupMetadata({ ttlMs: 5 * 60 * 1000 }); // cache 5 menit
+const groupCache = makeCachedGroupMetadata({ ttlMs: 5 * 60 * 1000 });
 
-const sock = makeWASocket({
-  auth: state,
-  cachedGroupMetadata: groupCache.get,
-});
-
+const sock = makeWASocket({ auth: state, cachedGroupMetadata: groupCache.get });
 sock.ev.on("creds.update", saveCreds);
-groupCache.attach(sock); // auto-cache + auto-invalidate pas grup berubah
+groupCache.attach(sock); // cache otomatis + invalidasi otomatis saat grup berubah
 ```
 
-📄 Contoh lengkap: [`examples/group-metadata-cache.js`](./examples/group-metadata-cache.js)
+Referensi: [`examples/group-metadata-cache.js`](./examples/group-metadata-cache.js).
 
----
+### 7.2 Resolusi JID vs LID
 
-## 🧰 Util tambahan lainnya
+WhatsApp dapat mengembalikan identitas pengguna dalam format LID (`12345@lid`, identitas internal) alih-alih JID nomor telepon (`628xxx@s.whatsapp.net`). Penggunaan LID secara langsung pada parameter `mentions` menyebabkan penyebutan (tag) mengarah ke identitas yang tidak sesuai dengan kontak sebenarnya.
 
-Beberapa helper lain yang ditambahin di fork ini, di luar yang udah ada di Baileys/ourin:
+```js
+import { resolvePNJid, resolvePNJids, toJid } from "xobe-baileys";
 
-<details>
-<summary>🚦 <b>Rate limit / anti-spam (<code>makeMessageQueue</code>)</b></summary>
+const resolved = await resolvePNJids(sock, participantJids);
+await sock.sendMessage(groupJid, {
+  text: resolved.map((j) => `@${j.split("@")[0]}`).join(" "),
+  mentions: resolved,
+});
 
-Antri pesan biar dikirim dengan jeda, bukan beruntun tanpa henti — ngurangin risiko akun kena flag spam.
+toJid("0812-3456-7890"); // → "081234567890@s.whatsapp.net"
+```
+
+`resolvePNJid` menggunakan `signalRepository.lidMapping` bawaan pustaka, yang terisi otomatis seiring pesan diterima. Apabila pemetaan untuk suatu LID belum tersedia, fungsi mengembalikan nilai LID tersebut tanpa modifikasi (tidak menimbulkan kegagalan).
+
+### 7.3 Antrean Pesan (Rate Limiting)
+
+Pengiriman pesan beruntun tanpa jeda ke banyak kontak/grup merupakan pola yang terdeteksi WhatsApp sebagai aktivitas spam dan merupakan penyebab umum pemblokiran akun. `makeMessageQueue` menyediakan antrean dengan jeda minimum dan batas jumlah pengiriman per menit.
 
 ```js
 import { makeMessageQueue } from "xobe-baileys";
 
 const queue = makeMessageQueue(sock, { delayMs: 1500, maxPerMinute: 20 });
-await queue.sendMessage(jid, { text: "halo" }); // dipakai kayak sock.sendMessage biasa
+await queue.sendMessage(jid, { text: "Pesan." }); // dipanggil setara dengan sock.sendMessage
 ```
 
-</details>
+### 7.4 Auto-Clear Session yang Korup
 
-<details>
-<summary>🏷️ <b>JID vs LID (<code>resolvePNJid</code>, <code>toJid</code>)</b></summary>
+**Gejala.** Log berulang berbunyi `MessageCounterError: Key used already or never filled`, `Bad MAC`, atau `No matching sessions found` untuk kontak yang sama. Ini merupakan indikasi session enkripsi (protokol Signal) dengan kontak tersebut tidak lagi sinkron.
 
-WhatsApp kadang ngasih identitas user sebagai **LID** (`12345@lid`, ID internal)
-bukan **JID** nomor telepon (`628xxx@s.whatsapp.net`). Kalau LID ini langsung
-dipakai buat nge-tag orang, yang ke-mention jadi nomor acak, bukan kontak
-aslinya. `resolvePNJid` numpang mapping store bawaan socket buat nerjemahin
-LID → JID nomor telepon sebelum dipakai mention.
+**Penyebab umum.** Dua instance bot berjalan bersamaan dengan folder session yang sama, atau proses pada platform hosting yang berhenti secara tidak normal (restart paksa) sehingga state di memori dan di berkas session tidak lagi konsisten. Kesalahan jenis ini bersumber dari dependensi `libsignal` (implementasi protokol Signal pihak ketiga), bukan dari kode xobe-baileys itu sendiri, dan juga ditemukan pada ourin-baileys maupun Baileys resmi dalam kondisi yang sama.
+
+**Solusi yang disediakan.** `attachSessionGuard` memantau log kegagalan dekripsi. Apabila kegagalan yang sama terjadi berulang untuk kontak tertentu dalam rentang waktu yang ditentukan, fungsi ini menghapus **hanya** kunci session untuk kontak tersebut — bukan seluruh folder session — sehingga protokol Signal akan membangun ulang session tersebut secara otomatis pada pesan berikutnya tanpa memerlukan login ulang (QR/pairing).
 
 ```js
-import { resolvePNJid, toJid } from "xobe-baileys";
+import makeWASocket, { attachSessionGuard } from "xobe-baileys";
 
-const participants = await sock.groupMetadata(groupJid).then(m => m.participants.map(p => p.id));
-const resolved = await Promise.all(participants.map(jid => resolvePNJid(sock, jid)));
+const sock = makeWASocket({ auth: state });
 
-await sock.sendMessage(groupJid, {
-  text: resolved.map(j => `@${j.split("@")[0]}`).join(" "),
-  mentions: resolved,
+attachSessionGuard(sock, {
+  threshold: 3,        // jumlah kegagalan beruntun sebelum session dihapus
+  windowMs: 120_000,   // rentang waktu yang diperhitungkan (milidetik)
+  onClear: (jid) => console.log(`Session untuk ${jid} telah di-reset otomatis.`),
 });
-
-toJid("0812-3456-7890"); // -> "081234567890@s.whatsapp.net"
 ```
 
-</details>
+Referensi: [`examples/session-guard.js`](./examples/session-guard.js). Penghapusan dapat dipicu secara manual melalui `const guard = attachSessionGuard(sock); await guard.clearNow(jid)`.
 
-<details>
-<summary>📝 <b>Logger siap pakai (<code>createLogger</code>)</b></summary>
+> Apabila kegagalan terjadi untuk hampir seluruh kontak secara bersamaan (bukan satu kontak tertentu), kemungkinan penyebabnya adalah dua instance bot berjalan bersamaan menggunakan folder session yang sama. Pastikan hanya satu proses yang berjalan per session sebelum mengandalkan fitur ini.
 
-```js
-import { createLogger } from "xobe-baileys";
-const logger = createLogger({ level: "warn" }); // default level: "silent"
-const sock = makeWASocket({ auth: state, logger });
-```
+### 7.5 Reconnect dengan Backoff
 
-</details>
-
-<details>
-<summary>🔁 <b>Reconnect dengan backoff (<code>withReconnect</code>)</b></summary>
-
-Contoh di tutorial atas (`startBot()` dipanggil ulang langsung) bisa jadi loop
-connect cepet kalau WhatsApp lagi gangguan. `withReconnect` nambahin jeda yang
-makin lama tiap gagal beruntun.
+Pola reconnect naif (memanggil ulang fungsi start tanpa jeda) dapat menimbulkan perulangan koneksi yang sangat cepat ketika WhatsApp mengalami gangguan. `withReconnect` menambahkan jeda yang meningkat secara eksponensial pada setiap kegagalan berturut-turut.
 
 ```js
 import { withReconnect, DisconnectReason } from "xobe-baileys";
@@ -356,270 +486,123 @@ sock.ev.on("connection.update", ({ connection, lastDisconnect }) => {
 });
 ```
 
-</details>
+### 7.6 Logger
+
+```js
+import { createLogger } from "xobe-baileys";
+const logger = createLogger({ level: "warn" }); // nilai default: "silent"
+const sock = makeWASocket({ auth: state, logger });
+```
 
 ---
 
-## 🧩 Contoh fitur
-
-> Semua contoh dipanggil dari dalam handler pesan. `jid` = `msg.key.remoteJid`.
-
-<details>
-<summary>🔘 <b>Tombol (interactive message)</b></summary>
-
-```js
-await sock.sendMessage(jid, {
-  interactiveMessage: {
-    title: "Halo!",
-    footer: "xobe-baileys",
-    header: "Pilih salah satu",
-    buttons: [
-      { name: "quick_reply", buttonParamsJson: JSON.stringify({ display_text: "Menu", id: ".menu" }) },
-      { name: "cta_url", buttonParamsJson: JSON.stringify({ display_text: "Buka website", url: "https://example.com" }) },
-      { name: "cta_copy", buttonParamsJson: JSON.stringify({ display_text: "Salin kode", copy_code: "KODE123" }) },
-    ],
-  },
-});
-```
-
-Nambah gambar di atasnya: tambahin `image: { url: "https://example.com/banner.jpg" }`
-di dalam `interactiveMessage`.
-
-</details>
-
-<details>
-<summary>📋 <b>Menu list (single_select)</b></summary>
-
-```js
-await sock.sendMessage(jid, {
-  interactiveMessage: {
-    title: "Pilih kategori",
-    footer: "xobe-baileys",
-    header: "Menu Bot",
-    buttons: [{
-      name: "single_select",
-      buttonParamsJson: JSON.stringify({
-        title: "Buka menu",
-        sections: [{
-          title: "Tools",
-          rows: [
-            { title: "Sticker", id: ".sticker" },
-            { title: "TTS", id: ".tts" },
-          ],
-        }],
-      }),
-    }],
-  },
-});
-```
-
-</details>
-
-<details>
-<summary>🖼️ <b>Album (beberapa foto/video sekaligus)</b></summary>
-
-```js
-await sock.sendMessage(jid, {
-  albumMessage: [
-    { image: { url: "./foto1.jpg" }, caption: "Foto 1" },
-    { image: { url: "./foto2.jpg" }, caption: "Foto 2" },
-    { video: { url: "./klip.mp4" }, caption: "Video" },
-  ],
-});
-```
-
-</details>
-
-<details>
-<summary>📣 <b>Channel (newsletter) — manual, bukan auto</b></summary>
-
-Fungsi ini **hanya** jalan kalau kode bot lu sendiri yang manggil:
-
-```js
-const info = await sock.cekIDSaluran("https://whatsapp.com/channel/xxxxx");
-console.log(info.name, info.subscribers);
-
-await sock.newsletterFollow("1203630000000000@newsletter");
-await sock.newsletterUnfollow("1203630000000000@newsletter");
-```
-
-</details>
-
-Daftar lengkap fungsi (grup, komunitas, VoIP, rich response, dll) ada di
-[`docs/README-ourin-original.md`](./docs/README-ourin-original.md) — itu dokumentasi
-bawaan ourin-baileys, jadi di sana masih ketulis `ourin-baileys`; ganti ke
-`xobe-baileys` di bagian import.
-
----
-
-## 🔁 Pindah dari ourin-baileys
+## 8. Migrasi dari ourin-baileys
 
 ```bash
-# 1. hapus yang lama
 npm uninstall ourin-baileys
-
-# 2. pasang xobe-baileys
 npm install github:gagadeb11116677/xobe-baileys
-
-# 3. bersihin cache lama
 rm -rf node_modules package-lock.json
 npm install
 ```
 
-Cari semua `require("ourin-baileys")` / `import("ourin-baileys")` di kode lu dan
-ganti jadi `xobe-baileys`:
-
-```powershell
-# Windows PowerShell
-Get-ChildItem -Recurse -Include *.js,*.mjs,*.cjs -Exclude node_modules | Select-String "ourin-baileys"
-```
+Periksa seluruh referensi `ourin-baileys` dalam kode sumber:
 
 ```bash
-# Linux / macOS
 grep -rn "ourin-baileys" --include=*.js --include=*.mjs --include=*.cjs .
 ```
 
-✅ Tes di nomor cadangan dulu sebelum pakai nomor utama.
-
----
-
-## 🧱 Kalau project lu CommonJS
-
-Library ini **ESM-only**. Kalau project lu `"type": "commonjs"` dan pakai `require`,
-`require("xobe-baileys")` bakal error. Dua jalan keluar:
-
-<details>
-<summary>🅰️ Import dinamis (tanpa ubah project jadi ESM)</summary>
-
-```js
-async function start() {
-  const baileys = await import("xobe-baileys");
-  const makeWASocket = baileys.default;
-  const { useMultiFileAuthState, DisconnectReason } = baileys;
-
-  const { state, saveCreds } = await useMultiFileAuthState("./session");
-  const sock = makeWASocket({ auth: state });
-  // ...lanjut kayak biasa
-}
-start();
-```
-
-</details>
-
-<details>
-<summary>🅱️ Ubah project jadi ESM</summary>
-
-Tambahin `"type": "module"` di `package.json`, ganti semua `require` jadi `import`,
-dan ganti `__dirname` / `__filename` kalau kepake.
-
-</details>
-
----
-
-## 🔍 Cara ngecek nggak ada auto-follow
-
-Jangan percaya klaim doang — cek sendiri, kodenya kebuka semua:
-
-```bash
-# harusnya NGGAK ada hasil sama sekali
-grep -rn "autoFollow" lib
-grep -rn "120363400911374213" lib
-```
-
 ```powershell
-# Windows PowerShell
-Select-String -Path lib\*\*.js -Pattern "autoFollow","120363400911374213"
+Get-ChildItem -Recurse -Include *.js,*.mjs,*.cjs -Exclude node_modules | Select-String "ourin-baileys"
 ```
 
-Terus tes langsung: konek pakai nomor cadangan, tunggu 3–5 menit (di ourin-baileys
-asli, follow-nya jalan setelah delay 90 detik), lalu liat di WhatsApp apakah ada
-channel baru yang ke-follow sendiri.
+Disarankan melakukan pengujian pada nomor cadangan sebelum diterapkan pada nomor produksi.
 
 ---
 
-## 🛠️ Masalah umum
+## 9. Pemecahan Masalah
+
+<details>
+<summary><code>MessageCounterError</code> / <code>Bad MAC</code> / <code>No matching sessions found</code> berulang</summary>
+
+Lihat [Bagian 7.4](#74-auto-clear-session-yang-korup). Penyebab paling umum: dua instance bot berjalan bersamaan dengan session yang sama.
+
+</details>
 
 <details>
 <summary><code>Cannot use import statement outside a module</code> / <code>ERR_REQUIRE_ESM</code></summary>
 
-Project lu belum ESM. Tambahin `"type": "module"` atau pakai cara di
-[bagian CommonJS](#-kalau-project-lu-commonjs).
+Proyek belum dikonfigurasi sebagai ESM. Tambahkan `"type": "module"` pada `package.json`.
 
 </details>
 
 <details>
-<summary>QR nggak muncul</summary>
+<summary>Kode QR tidak muncul</summary>
 
-`printQRInTerminal` udah deprecated. Tangkap sendiri `qr` dari `connection.update`
-dan tampilin pakai `qrcode-terminal` (lihat contoh di atas).
-
-</details>
-
-<details>
-<summary>Konek terus-terusan putus / loop</summary>
-
-Biasanya session rusak. Stop bot, hapus folder `session`, login ulang.
+Properti `printQRInTerminal` telah usang (deprecated). Tangkap nilai `qr` dari event `connection.update` dan tampilkan menggunakan `qrcode-terminal` sebagaimana contoh pada Bagian 4.
 
 </details>
 
 <details>
-<summary>Thumbnail / stiker nggak kebentuk</summary>
+<summary>Koneksi terputus-sambung berulang (loop)</summary>
 
-Install `sharp` (atau `jimp`), dan `ffmpeg` buat video.
+Umumnya disebabkan oleh berkas session yang rusak. Hentikan proses, hapus folder `session`, lalu lakukan login ulang. Pertimbangkan pula penggunaan [`withReconnect`](#75-reconnect-dengan-backoff) agar percobaan ulang tidak terjadi tanpa jeda.
 
 </details>
 
 <details>
-<summary>Panggilan suara (VoIP) nggak jalan</summary>
+<summary>Thumbnail atau stiker tidak terbentuk</summary>
 
-Butuh paket tambahan `@roamhq/wrtc` dan `ffmpeg`.
+Instal `sharp` (atau `jimp`), serta `ffmpeg` untuk pemrosesan video.
+
+</details>
+
+<details>
+<summary>Fitur panggilan suara (VoIP) tidak berfungsi</summary>
+
+Memerlukan paket tambahan `@roamhq/wrtc` dan `ffmpeg` terpasang pada sistem.
 
 </details>
 
 <details>
 <summary><code>npm install</code> dari GitHub gagal</summary>
 
-Pastiin Git udah ke-install (`git --version`) dan repo ini public.
+Pastikan Git terpasang (`git --version`) dan repositori bersifat publik.
 
 </details>
 
 ---
 
-## ⚠️ Catatan penting
+## 10. Keamanan
 
-- `ourin-baileys` asli udah ditandai malware di npm (Oktober 2026). Fork ini udah
-  dibersihin dari auto-follow channel, **tapi sisa kodenya belum diaudit penuh**,
-  terutama file besar di `lib/assets/wasm/` dan `lib/WAM/constants.js`. Baca
-  [`SECURITY.md`](./SECURITY.md) sebelum dipakai buat hal penting.
-- Kalau lu pernah pakai `ourin-baileys` asli, anggap mesin itu pernah kena: ganti
-  token/API key dan pair ulang WhatsApp-nya.
-- Jangan upload `session/`, `creds.json`, atau `.env` ke GitHub.
-- Library ini **nggak resmi** dan nggak ada hubungannya sama WhatsApp/Meta. Akun
-  yang dipakai buat bot bisa kena banned dari WhatsApp — jangan dipakai buat spam,
-  dan pakai nomor cadangan dulu buat tes.
-- Nggak ada garansi. Pakai dengan risiko sendiri.
+- Paket `ourin-baileys` asli telah ditandai sebagai berbahaya oleh npm (Oktober 2026). Fork ini telah dibersihkan dari fitur auto-follow channel, namun **belum seluruh berkas diaudit secara menyeluruh**. Status audit lengkap, termasuk berkas mana yang sudah dan belum diperiksa, didokumentasikan pada [`SECURITY.md`](./SECURITY.md).
+- Pengguna yang sebelumnya menggunakan `ourin-baileys` asli disarankan memperlakukan perangkat tersebut sebagai berpotensi disusupi: lakukan rotasi token/API key dan pasangkan ulang (re-pair) akun WhatsApp dari perangkat yang bersih.
+- Jangan mengunggah folder `session/`, berkas `creds.json`, atau `.env` ke repositori publik manapun.
+- Pustaka ini tidak resmi dan tidak berafiliasi dengan WhatsApp maupun Meta. Penggunaan untuk aktivitas spam atau bulk messaging berisiko mengakibatkan pemblokiran akun.
+- Tidak terdapat jaminan (warranty) dalam bentuk apa pun. Penggunaan sepenuhnya menjadi tanggung jawab pengguna.
+
+Cara memverifikasi klaim penghapusan auto-follow secara mandiri:
+
+```bash
+grep -rn "autoFollow" lib
+grep -rn "120363400911374213" lib
+```
+
+Kedua perintah di atas seharusnya tidak menghasilkan keluaran apa pun.
 
 ---
 
-## 📄 Lisensi
+## 11. Lisensi & Atribusi
 
-**MIT**. Hak cipta asli milik pembuat Baileys dan ourin-baileys. File
-[`LICENSE`](./LICENSE) jangan dihapus.
+Dilisensikan di bawah **MIT License**. Hak cipta asli tetap menjadi milik pengembang Baileys dan ourin-baileys. Berkas [`LICENSE`](./LICENSE) tidak boleh dihapus pada turunan apa pun dari repositori ini.
 
-## 🙏 Credits
-
-- **[WhiskeySockets/Baileys](https://github.com/WhiskeySockets/Baileys)** — library asli yang jadi fondasi semua ini. Semua kerja berat (protokol WhatsApp, enkripsi Signal, dll) dari sini.
-- **ourin-baileys** — mod pihak ketiga yang nambahin fitur (interactive message, album, VoIP). xobe-baileys dibangun di atas basis kode ini, minus auto-follow-nya.
-- Siapa pun yang lapor bug atau bantu audit lewat [issue](../../issues) — makasih, itu yang bikin fork ini makin bisa dipercaya.
-
-Kalau mau dukung proyek asalnya, pertimbangkan kontribusi ke
-[WhiskeySockets/Baileys](https://github.com/WhiskeySockets/Baileys) langsung —
-di situlah protokol intinya dirawat.
+**Atribusi:**
+- [WhiskeySockets/Baileys](https://github.com/WhiskeySockets/Baileys) — pustaka dasar yang menjadi fondasi seluruh fungsionalitas protokol WhatsApp pada repositori ini.
+- `ourin-baileys` — modifikasi pihak ketiga yang menambahkan sejumlah fitur (interactive message, album, VoIP) yang menjadi basis kode fork ini.
 
 <div align="center">
 
 ---
 
-Dibuat di atas kerja keras [WhiskeySockets/Baileys](https://github.com/WhiskeySockets/Baileys) · fork dari `ourin-baileys`
+Dibangun di atas [WhiskeySockets/Baileys](https://github.com/WhiskeySockets/Baileys) · fork dari `ourin-baileys`
 
 </div>

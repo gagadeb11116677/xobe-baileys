@@ -51,3 +51,15 @@ pengaruh nomor versi paket ini.
 
 ### Audit
 - `lib/WAM/constants.js` dan `lib/assets/wasm/*` sudah diaudit (lihat `SECURITY.md`): tidak ditemukan kode eksekusi mencurigakan, keduanya berasal dari kode WhatsApp Web resmi (data statis dan hasil build Emscripten).
+
+## [1.1.1] — 2026-10-31
+
+### Ditambah
+- `attachSessionGuard()` di `Utils/session-guard.js` — mendeteksi kegagalan dekripsi berulang (`MessageCounterError`, `Bad MAC`, `No matching sessions found`) untuk kontak tertentu, lalu menghapus **hanya** session kontak tersebut (bukan seluruh folder session), sehingga protokol Signal membangun ulang session secara otomatis tanpa memerlukan login ulang.
+- Contoh: `examples/session-guard.js`.
+
+### Audit
+- Diverifikasi: seluruh perubahan sejak fork dari ourin-baileys (lihat riwayat di atas) tidak menyentuh `lib/Signal/` sama sekali. Error kelas `MessageCounterError` bersumber dari dependensi pihak ketiga `libsignal` (implementasi protokol Signal), bukan dari kode xobe-baileys, dan juga dapat terjadi pada ourin-baileys maupun Baileys resmi dalam kondisi yang sama (umumnya: dua instance bot berjalan bersamaan dengan session yang sama, atau restart proses yang tidak bersih).
+
+### Diubah
+- `README.md` ditulis ulang dengan gaya bahasa formal dan struktur bernomor, mencakup referensi API lengkap untuk manajemen grup, status/presence, dan tombol interaktif (button message), yang sebelumnya tidak didokumentasikan secara rinci.
