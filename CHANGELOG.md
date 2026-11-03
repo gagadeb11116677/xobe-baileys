@@ -63,3 +63,57 @@ pengaruh nomor versi paket ini.
 
 ### Diubah
 - `README.md` ditulis ulang dengan gaya bahasa formal dan struktur bernomor, mencakup referensi API lengkap untuk manajemen grup, status/presence, dan tombol interaktif (button message), yang sebelumnya tidak didokumentasikan secara rinci.
+
+## [1.1.2] — 2026-11-03
+
+### Diperbaiki (bug nyata, ditemukan lewat full audit + uji import langsung)
+- `lib/Modded/message_builder.js` masih mencetak `console.warn` berisi tulisan
+  `[ourin-baileys]` saat modul opsional `sharp`/`fluent-ffmpeg` tidak terpasang
+  — kelewat dari rebranding sebelumnya. Sekarang menampilkan `[xobe-baileys]`.
+  Ditemukan dengan cara benar-benar meng-import paket ini (`import('./lib/index.js')`)
+  dan memeriksa output di terminal, bukan cuma grep nama variabel/komentar.
+
+### Ditambah
+- `attachGracefulShutdown()` di `Utils/graceful-shutdown.js` — menangani
+  `SIGINT`/`SIGTERM` (Ctrl+C, atau restart/redeploy dari platform hosting):
+  memastikan `saveCreds()` selesai dan `sock.end()` terpanggil sebelum proses
+  keluar. Ini melengkapi `attachSessionGuard` (7.4): yang satu mencegah
+  korupsi session di titik awal, yang satu lagi menangani jika sudah terlanjur
+  korup.
+- Contoh: `examples/graceful-shutdown.js`.
+
+### Audit
+- Seluruh file `.js` di `lib/`, `WAProto/`, dan `examples/` lolos `node --check`.
+- Paket diverifikasi dengan benar-benar di-import (`import('./lib/index.js')`,
+  bukan cuma pemeriksaan sintaks statis) dan seluruh 10 fungsi utilitas dari
+  v1.0.0–1.1.1 dikonfirmasi ter-ekspor dan dapat dipanggil dari root paket.
+
+## [1.1.2-r] — 2026-11-03
+
+### Diperbaiki (ditemukan lewat audit tautan internal README)
+- Tautan "lihat alternatif untuk CommonJS" pada bagian Instalasi mengarah ke
+  `#kalau-project-lu-commonjs`, anchor dari gaya README lama (sebelum ditulis
+  ulang formal di v1.1.1) yang sudah tidak ada — tautan tersebut rusak sejak
+  v1.1.1. Konten panduan CommonJS (import dinamis / konversi penuh ke ESM)
+  ditambahkan kembali pada bagian Pemecahan Masalah dengan anchor yang valid.
+
+### Ditambah
+- **Bagian 7 — Fitur Berkelas via Protobuf**: dokumentasi `poll` (Poll Message)
+  dan `event` (Event Message) — keduanya fitur yang sudah ada di kode sejak
+  basis ourin-baileys (memetakan langsung ke field protobuf
+  `pollCreationMessage`/`eventMessage` di `WAProto.proto`), namun belum pernah
+  didokumentasikan sebelumnya.
+
+### Diubah
+- README ditulis ulang dengan gaya naratif/sinematik pada bagian pembuka dan
+  penutup, tanpa mengubah keakuratan isi teknis. Struktur bernomor direvisi
+  dari 11 menjadi 12 bagian untuk mengakomodasi Bagian 7 yang baru; seluruh
+  tautan internal (daftar isi + referensi silang antar-bagian) diperbarui dan
+  diverifikasi ulang.
+
+### Audit
+- Seluruh 34 heading dan 41 tautan internal pada README diverifikasi secara
+  terprogram; satu tautan rusak (lihat di atas) ditemukan dan diperbaiki.
+- `node --check` dijalankan ulang pada seluruh berkas `.js` di `lib/`,
+  `WAProto/`, dan `examples/` — tidak ada perubahan kode pada rilis ini selain
+  dokumentasi, sehingga tidak ada risiko regresi fungsional.

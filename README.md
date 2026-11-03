@@ -1,18 +1,41 @@
 <div align="center">
 
+```
+╔══════════════════════════════════════════════════════════════╗
+║                                                                ║
+║     ██╗  ██╗ ██████╗ ██████╗ ███████╗                        ║
+║     ╚██╗██╔╝██╔═══██╗██╔══██╗██╔════╝                        ║
+║      ╚███╔╝ ██║   ██║██████╔╝█████╗                          ║
+║      ██╔██╗ ██║   ██║██╔══██╗██╔══╝                          ║
+║     ██╔╝ ██╗╚██████╔╝██████╔╝███████╗                        ║
+║     ╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚══════╝                        ║
+║                                                                ║
+║              B  A  I  L  E  Y  S                              ║
+║                                                                ║
+╚══════════════════════════════════════════════════════════════╝
+```
+
 # ⚡ xobe-baileys
 
-### Pustaka WhatsApp (Baileys v7) untuk pengembangan bot — fork dari `ourin-baileys` dengan fitur auto-follow channel tersembunyi dihapus.
+### *Satu koneksi WebSocket. Satu protokol Signal. Satu sesi yang harus tetap hidup.*
+### Pustaka WhatsApp (Baileys v7) untuk pengembangan bot — lahir dari reruntuhan `ourin-baileys`, dibangun ulang tanpa kode yang bersembunyi di baliknya.
 
-![version](https://img.shields.io/badge/version-1.1.1-blue?style=for-the-badge)
+![version](https://img.shields.io/badge/version-1.1.2--r-blue?style=for-the-badge)
 ![license](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)
 ![node](https://img.shields.io/badge/node-%3E%3D20-brightgreen?style=for-the-badge&logo=node.js&logoColor=white)
 ![esm](https://img.shields.io/badge/module-ESM--only-yellow?style=for-the-badge)
 ![status](https://img.shields.io/badge/auto--follow-dihapus-success?style=for-the-badge)
+![proto](https://img.shields.io/badge/powered%20by-protobuf-8A2BE2?style=for-the-badge)
 
-**[Latar Belakang](#1-latar-belakang)** · **[Instalasi](#3-instalasi)** · **[Panduan Dasar](#4-panduan-dasar)** · **[Referensi API](#6-referensi-api)** · **[Keandalan](#7-utilitas-keandalan)** · **[Pemecahan Masalah](#9-pemecahan-masalah)**
+*Di balik setiap pesan yang sampai ke layar seseorang, ada struktur data biner yang harus dibangun dengan presisi — byte demi byte, field demi field. Ini pustaka yang melakukannya.*
+
+**[Latar Belakang](#1-latar-belakang)** · **[Instalasi](#3-instalasi)** · **[Panduan Dasar](#4-panduan-dasar)** · **[Referensi API](#6-referensi-api)** · **[Fitur Berkelas](#7-fitur-berkelas-via-protobuf)** · **[Keandalan](#8-utilitas-keandalan)** · **[Pemecahan Masalah](#10-pemecahan-masalah)**
 
 </div>
+
+---
+
+> *"Setiap pesan WhatsApp, pada akhirnya, hanyalah sebuah `proto.Message` — terenkripsi, terbungkus, terkirim melalui kabel. Yang membedakan pustaka yang baik dari yang sekadar berfungsi adalah seberapa jujur ia memperlakukan struktur itu."*
 
 ---
 
@@ -29,17 +52,21 @@
    - [6.3 Manajemen Grup](#63-manajemen-grup)
    - [6.4 Status (Presence) & Profil](#64-status-presence--profil)
    - [6.5 Channel (Newsletter)](#65-channel-newsletter)
-7. [Utilitas Keandalan](#7-utilitas-keandalan)
-   - [7.1 Cache Metadata Grup](#71-cache-metadata-grup)
-   - [7.2 Resolusi JID vs LID](#72-resolusi-jid-vs-lid)
-   - [7.3 Antrean Pesan (Rate Limiting)](#73-antrean-pesan-rate-limiting)
-   - [7.4 Auto-Clear Session yang Korup](#74-auto-clear-session-yang-korup)
-   - [7.5 Reconnect dengan Backoff](#75-reconnect-dengan-backoff)
-   - [7.6 Logger](#76-logger)
-8. [Migrasi dari ourin-baileys](#8-migrasi-dari-ourin-baileys)
-9. [Pemecahan Masalah](#9-pemecahan-masalah)
-10. [Keamanan](#10-keamanan)
-11. [Lisensi & Atribusi](#11-lisensi--atribusi)
+7. [Fitur Berkelas via Protobuf](#7-fitur-berkelas-via-protobuf)
+   - [7.1 Poll Message](#71-poll-message)
+   - [7.2 Event Message](#72-event-message)
+8. [Utilitas Keandalan](#8-utilitas-keandalan)
+   - [8.1 Cache Metadata Grup](#81-cache-metadata-grup)
+   - [8.2 Resolusi JID vs LID](#82-resolusi-jid-vs-lid)
+   - [8.3 Antrean Pesan (Rate Limiting)](#83-antrean-pesan-rate-limiting)
+   - [8.4 Auto-Clear Session yang Korup](#84-auto-clear-session-yang-korup)
+   - [8.5 Reconnect dengan Backoff](#85-reconnect-dengan-backoff)
+   - [8.6 Logger](#86-logger)
+   - [8.7 Graceful Shutdown](#87-graceful-shutdown)
+9. [Migrasi dari ourin-baileys](#9-migrasi-dari-ourin-baileys)
+10. [Pemecahan Masalah](#10-pemecahan-masalah)
+11. [Keamanan](#11-keamanan)
+12. [Lisensi & Atribusi](#12-lisensi--atribusi)
 
 ---
 
@@ -57,7 +84,7 @@ ourin-baileys (modifikasi pihak ketiga)  ──►  ditandai berbahaya oleh npm 
 xobe-baileys (fork ini)                  ──►  auto-follow dihapus, nama paket diganti
 ```
 
-Dokumentasi teknis mengenai bagian kode yang dihapus, serta cakupan audit yang sudah dan belum dilakukan, tersedia di [`NOTICE.md`](./NOTICE.md), [`SECURITY.md`](./SECURITY.md), dan [`CHANGELOG.md`](./CHANGELOG.md). Pengguna dianjurkan untuk memverifikasi klaim ini secara independen; lihat [Bagian 10](#10-keamanan).
+Dokumentasi teknis mengenai bagian kode yang dihapus, serta cakupan audit yang sudah dan belum dilakukan, tersedia di [`NOTICE.md`](./NOTICE.md), [`SECURITY.md`](./SECURITY.md), dan [`CHANGELOG.md`](./CHANGELOG.md). Pengguna dianjurkan untuk memverifikasi klaim ini secara independen; lihat [Bagian 10](#11-keamanan).
 
 ## 2. Perbandingan dengan ourin-baileys
 
@@ -233,7 +260,7 @@ Pada WhatsApp: **Perangkat Tertaut → Tautkan Perangkat → Tautkan dengan nomo
 
 ## 6. Referensi API
 
-Seluruh fungsi berikut dipanggil melalui objek `sock` hasil `makeWASocket()`. Variabel `jid` merujuk pada `msg.key.remoteJid` (untuk pesan masuk) atau JID tujuan yang dibentuk melalui `toJid()` (lihat [7.2](#72-resolusi-jid-vs-lid)).
+Seluruh fungsi berikut dipanggil melalui objek `sock` hasil `makeWASocket()`. Variabel `jid` merujuk pada `msg.key.remoteJid` (untuk pesan masuk) atau JID tujuan yang dibentuk melalui `toJid()` (lihat [8.2](#82-resolusi-jid-vs-lid)).
 
 ### 6.1 Pesan Teks & Media
 
@@ -358,7 +385,7 @@ await sock.sendMessage(groupJid, {
 });
 ```
 
-> Pada beberapa kasus, `participants.map((p) => p.id)` dapat mengembalikan JID dalam format LID (`@lid`), bukan format nomor telepon standar (`@s.whatsapp.net`), yang menyebabkan mention tidak mengarah ke kontak yang benar. Lihat [7.2](#72-resolusi-jid-vs-lid) untuk solusinya.
+> Pada beberapa kasus, `participants.map((p) => p.id)` dapat mengembalikan JID dalam format LID (`@lid`), bukan format nomor telepon standar (`@s.whatsapp.net`), yang menyebabkan mention tidak mengarah ke kontak yang benar. Lihat [8.2](#82-resolusi-jid-vs-lid) untuk solusinya.
 
 ### 6.4 Status (Presence) & Profil
 
@@ -394,11 +421,86 @@ Daftar fungsi lain di luar cakupan dokumen ini (komunitas, VoIP, rich response, 
 
 ---
 
-## 7. Utilitas Keandalan
+## 7. Fitur Berkelas via Protobuf
+
+> *Setiap pesan WhatsApp — teks, gambar, tombol, polling — pada akhirnya adalah satu objek `proto.Message` yang sama, didefinisikan dalam berkas `.proto` resmi WhatsApp Web (`WAProto/WAProto.proto`). Dua fitur berikut tidak dibangun dari API tingkat tinggi yang disederhanakan, melainkan memetakan langsung ke field protobuf-nya: `pollCreationMessage` dan `eventMessage`. Fungsinya sudah ada sejak basis ourin-baileys, namun belum pernah didokumentasikan sebelum revisi ini.*
+
+### 7.1 Poll Message
+
+Poll (jajak pendapat) dipetakan ke field `Message.PollCreationMessage` pada protobuf. Opsi `toAnnouncementGroup` menentukan apakah pesan dibangun sebagai `pollCreationMessageV2` (varian untuk grup pengumuman/komunitas) atau varian standar.
+
+```js
+await sock.sendMessage(jid, {
+  poll: {
+    name: "Jadwal rilis versi berikutnya?",
+    values: ["Minggu ini", "Minggu depan", "Belum ditentukan"],
+    selectableCount: 1,          // 0 = boleh pilih lebih dari satu opsi
+    toAnnouncementGroup: false,  // true untuk grup pengumuman/komunitas
+  },
+});
+```
+
+| Properti | Tipe | Keterangan |
+|---|---|---|
+| `name` | `string` | Pertanyaan/judul polling |
+| `values` | `string[]` | Daftar opsi jawaban |
+| `selectableCount` | `number` | Jumlah opsi yang boleh dipilih (`0` = bebas) |
+| `messageSecret` | `Uint8Array` | Kunci 32 byte untuk enkripsi hasil polling; dibuat otomatis jika tidak diisi |
+| `toAnnouncementGroup` | `boolean` | Gunakan varian V2 untuk grup pengumuman/komunitas |
+
+**Membaca hasil polling** dilakukan melalui event `messages.update`, karena WhatsApp mengirim update terenkripsi setiap kali seseorang memilih opsi:
+
+```js
+sock.ev.on("messages.update", (updates) => {
+  for (const { update } of updates) {
+    if (update.pollUpdates) {
+      // vote baru masuk; dekripsi memerlukan messageSecret dari pesan poll asal —
+      // lihat fungsi getAggregateVotesInPollMessage pada dokumentasi ourin-baileys asli
+      // (docs/README-ourin-original.md) untuk contoh agregasi lengkap.
+    }
+  }
+});
+```
+
+### 7.2 Event Message
+
+Event message dipetakan ke field `Message.EventMessage` — fitur "acara"/kalender WhatsApp, lengkap dengan opsi tautan panggilan suara/video terjadwal.
+
+```js
+await sock.sendMessage(jid, {
+  event: {
+    name: "Rapat Rilis xobe-baileys",
+    description: "Pembahasan fitur untuk rilis berikutnya.",
+    startDate: new Date("2026-11-10T19:00:00+07:00"),
+    endDate: new Date("2026-11-10T20:00:00+07:00"),
+    call: "video",             // "audio" | "video" | tidak diisi (tanpa tautan panggilan)
+    extraGuestsAllowed: true,
+    isScheduleCall: true,
+  },
+});
+```
+
+| Properti | Tipe | Keterangan |
+|---|---|---|
+| `name` | `string` | Nama acara |
+| `description` | `string` | Deskripsi acara (opsional) |
+| `startDate` | `Date` | Wajib diisi |
+| `endDate` | `Date` | Opsional |
+| `location` | `WALocationMessage` | Lokasi fisik acara (opsional) |
+| `call` | `"audio" \| "video"` | Menyertakan tautan panggilan terjadwal |
+| `isCancelled` | `boolean` | Menandai acara sebagai dibatalkan |
+| `extraGuestsAllowed` | `boolean` | Mengizinkan tamu tambahan |
+| `isScheduleCall` | `boolean` | Menandai sebagai panggilan terjadwal |
+
+> Membangun tautan panggilan (`call`) memerlukan opsi `getCallLink` tambahan pada pemanggilan `sendMessage` di sebagian konfigurasi server WhatsApp. Jika tautan panggilan tidak muncul, acara tetap terkirim tanpa tautan tersebut — bukan kegagalan pengiriman.
+
+---
+
+## 8. Utilitas Keandalan
 
 Bagian ini mendokumentasikan fungsi tambahan yang tidak tersedia pada ourin-baileys maupun Baileys resmi, ditambahkan khusus pada fork ini.
 
-### 7.1 Cache Metadata Grup
+### 8.1 Cache Metadata Grup
 
 Setiap pengiriman pesan ke grup secara default memicu permintaan `groupMetadata` ke server WhatsApp (diperlukan untuk enkripsi ke seluruh anggota). Pada bot dengan volume pengiriman tinggi ke grup yang sama, hal ini menjadi permintaan yang berulang secara tidak perlu.
 
@@ -415,7 +517,7 @@ groupCache.attach(sock); // cache otomatis + invalidasi otomatis saat grup berub
 
 Referensi: [`examples/group-metadata-cache.js`](./examples/group-metadata-cache.js).
 
-### 7.2 Resolusi JID vs LID
+### 8.2 Resolusi JID vs LID
 
 WhatsApp dapat mengembalikan identitas pengguna dalam format LID (`12345@lid`, identitas internal) alih-alih JID nomor telepon (`628xxx@s.whatsapp.net`). Penggunaan LID secara langsung pada parameter `mentions` menyebabkan penyebutan (tag) mengarah ke identitas yang tidak sesuai dengan kontak sebenarnya.
 
@@ -433,7 +535,7 @@ toJid("0812-3456-7890"); // → "081234567890@s.whatsapp.net"
 
 `resolvePNJid` menggunakan `signalRepository.lidMapping` bawaan pustaka, yang terisi otomatis seiring pesan diterima. Apabila pemetaan untuk suatu LID belum tersedia, fungsi mengembalikan nilai LID tersebut tanpa modifikasi (tidak menimbulkan kegagalan).
 
-### 7.3 Antrean Pesan (Rate Limiting)
+### 8.3 Antrean Pesan (Rate Limiting)
 
 Pengiriman pesan beruntun tanpa jeda ke banyak kontak/grup merupakan pola yang terdeteksi WhatsApp sebagai aktivitas spam dan merupakan penyebab umum pemblokiran akun. `makeMessageQueue` menyediakan antrean dengan jeda minimum dan batas jumlah pengiriman per menit.
 
@@ -444,7 +546,7 @@ const queue = makeMessageQueue(sock, { delayMs: 1500, maxPerMinute: 20 });
 await queue.sendMessage(jid, { text: "Pesan." }); // dipanggil setara dengan sock.sendMessage
 ```
 
-### 7.4 Auto-Clear Session yang Korup
+### 8.4 Auto-Clear Session yang Korup
 
 **Gejala.** Log berulang berbunyi `MessageCounterError: Key used already or never filled`, `Bad MAC`, atau `No matching sessions found` untuk kontak yang sama. Ini merupakan indikasi session enkripsi (protokol Signal) dengan kontak tersebut tidak lagi sinkron.
 
@@ -468,7 +570,7 @@ Referensi: [`examples/session-guard.js`](./examples/session-guard.js). Penghapus
 
 > Apabila kegagalan terjadi untuk hampir seluruh kontak secara bersamaan (bukan satu kontak tertentu), kemungkinan penyebabnya adalah dua instance bot berjalan bersamaan menggunakan folder session yang sama. Pastikan hanya satu proses yang berjalan per session sebelum mengandalkan fitur ini.
 
-### 7.5 Reconnect dengan Backoff
+### 8.5 Reconnect dengan Backoff
 
 Pola reconnect naif (memanggil ulang fungsi start tanpa jeda) dapat menimbulkan perulangan koneksi yang sangat cepat ketika WhatsApp mengalami gangguan. `withReconnect` menambahkan jeda yang meningkat secara eksponensial pada setiap kegagalan berturut-turut.
 
@@ -486,7 +588,7 @@ sock.ev.on("connection.update", ({ connection, lastDisconnect }) => {
 });
 ```
 
-### 7.6 Logger
+### 8.6 Logger
 
 ```js
 import { createLogger } from "xobe-baileys";
@@ -494,9 +596,32 @@ const logger = createLogger({ level: "warn" }); // nilai default: "silent"
 const sock = makeWASocket({ auth: state, logger });
 ```
 
+### 8.7 Graceful Shutdown
+
+Melengkapi [8.4](#84-auto-clear-session-yang-korup): jika 8.4 menangani session yang **sudah** korup, bagian ini mencegah korupsi terjadi di titik awal. Penyebab paling umum session korup adalah proses bot yang dihentikan secara paksa (`SIGTERM` dari platform hosting saat restart/redeploy, atau `Ctrl+C`) di tengah proses penulisan berkas session.
+
+`attachGracefulShutdown` menangkap sinyal `SIGINT`/`SIGTERM`, memastikan `saveCreds()` selesai dijalankan, menutup koneksi socket dengan bersih (`sock.end()`), baru kemudian proses keluar.
+
+```js
+import makeWASocket, { useMultiFileAuthState, attachGracefulShutdown } from "xobe-baileys";
+
+const { state, saveCreds } = await useMultiFileAuthState("./session");
+const sock = makeWASocket({ auth: state });
+sock.ev.on("creds.update", saveCreds);
+
+attachGracefulShutdown(sock, {
+  saveCreds,
+  onShutdown: (signal) => console.log(`Menerima ${signal}, menyimpan session sebelum keluar...`),
+});
+```
+
+> Batasan: `SIGKILL` (`kill -9`) tidak dapat ditangkap oleh proses Node.js manapun — ini batasan sistem operasi, bukan batasan pustaka ini. Fitur ini menangani kasus restart/redeploy yang normal (`SIGTERM`/`SIGINT`), bukan seluruh kemungkinan penghentian paksa.
+
+Referensi: [`examples/graceful-shutdown.js`](./examples/graceful-shutdown.js).
+
 ---
 
-## 8. Migrasi dari ourin-baileys
+## 9. Migrasi dari ourin-baileys
 
 ```bash
 npm uninstall ourin-baileys
@@ -519,19 +644,36 @@ Disarankan melakukan pengujian pada nomor cadangan sebelum diterapkan pada nomor
 
 ---
 
-## 9. Pemecahan Masalah
+## 10. Pemecahan Masalah
 
 <details>
 <summary><code>MessageCounterError</code> / <code>Bad MAC</code> / <code>No matching sessions found</code> berulang</summary>
 
-Lihat [Bagian 7.4](#74-auto-clear-session-yang-korup). Penyebab paling umum: dua instance bot berjalan bersamaan dengan session yang sama.
+Lihat [Bagian 8.4](#84-auto-clear-session-yang-korup). Penyebab paling umum: dua instance bot berjalan bersamaan dengan session yang sama.
 
 </details>
 
 <details>
-<summary><code>Cannot use import statement outside a module</code> / <code>ERR_REQUIRE_ESM</code></summary>
+<summary id="kalau-project-lu-commonjs"><code>Cannot use import statement outside a module</code> / <code>ERR_REQUIRE_ESM</code></summary>
 
-Proyek belum dikonfigurasi sebagai ESM. Tambahkan `"type": "module"` pada `package.json`.
+Pustaka ini bersifat **ESM-only**. Jika proyek masih `"type": "commonjs"` (atau tidak mendeklarasikan `type` sama sekali) dan menggunakan `require`, maka `require("xobe-baileys")` akan gagal. Dua solusi:
+
+**Opsi A — import dinamis** (tanpa mengubah proyek menjadi ESM):
+
+```js
+async function start() {
+  const baileys = await import("xobe-baileys");
+  const makeWASocket = baileys.default;
+  const { useMultiFileAuthState, DisconnectReason } = baileys;
+
+  const { state, saveCreds } = await useMultiFileAuthState("./session");
+  const sock = makeWASocket({ auth: state });
+  // ...lanjutkan seperti biasa
+}
+start();
+```
+
+**Opsi B — jadikan proyek ESM sepenuhnya**: tambahkan `"type": "module"` pada `package.json`, ganti seluruh `require` menjadi `import`, dan sesuaikan penggunaan `__dirname`/`__filename` jika ada.
 
 </details>
 
@@ -545,7 +687,7 @@ Properti `printQRInTerminal` telah usang (deprecated). Tangkap nilai `qr` dari e
 <details>
 <summary>Koneksi terputus-sambung berulang (loop)</summary>
 
-Umumnya disebabkan oleh berkas session yang rusak. Hentikan proses, hapus folder `session`, lalu lakukan login ulang. Pertimbangkan pula penggunaan [`withReconnect`](#75-reconnect-dengan-backoff) agar percobaan ulang tidak terjadi tanpa jeda.
+Umumnya disebabkan oleh berkas session yang rusak. Hentikan proses, hapus folder `session`, lalu lakukan login ulang. Pertimbangkan pula penggunaan [`withReconnect`](#85-reconnect-dengan-backoff) agar percobaan ulang tidak terjadi tanpa jeda.
 
 </details>
 
@@ -572,7 +714,9 @@ Pastikan Git terpasang (`git --version`) dan repositori bersifat publik.
 
 ---
 
-## 10. Keamanan
+## 11. Keamanan
+
+> *Kepercayaan dibangun pelan-pelan, dan hancur dalam satu baris kode yang tersembunyi. Berikut yang sudah diperiksa, dan yang jujur belum.*
 
 - Paket `ourin-baileys` asli telah ditandai sebagai berbahaya oleh npm (Oktober 2026). Fork ini telah dibersihkan dari fitur auto-follow channel, namun **belum seluruh berkas diaudit secara menyeluruh**. Status audit lengkap, termasuk berkas mana yang sudah dan belum diperiksa, didokumentasikan pada [`SECURITY.md`](./SECURITY.md).
 - Pengguna yang sebelumnya menggunakan `ourin-baileys` asli disarankan memperlakukan perangkat tersebut sebagai berpotensi disusupi: lakukan rotasi token/API key dan pasangkan ulang (re-pair) akun WhatsApp dari perangkat yang bersih.
@@ -591,7 +735,7 @@ Kedua perintah di atas seharusnya tidak menghasilkan keluaran apa pun.
 
 ---
 
-## 11. Lisensi & Atribusi
+## 12. Lisensi & Atribusi
 
 Dilisensikan di bawah **MIT License**. Hak cipta asli tetap menjadi milik pengembang Baileys dan ourin-baileys. Berkas [`LICENSE`](./LICENSE) tidak boleh dihapus pada turunan apa pun dari repositori ini.
 
@@ -603,6 +747,9 @@ Dilisensikan di bawah **MIT License**. Hak cipta asli tetap menjadi milik pengem
 
 ---
 
-Dibangun di atas [WhiskeySockets/Baileys](https://github.com/WhiskeySockets/Baileys) · fork dari `ourin-baileys`
+*Koneksi akan putus. Session akan korup sesekali. Itu bukan kegagalan — itu jaringan yang nyata.*
+*Yang membedakan bot yang bertahan dari yang tumbang adalah apa yang terjadi sepersekian detik setelahnya.*
+
+**xobe-baileys** — dibangun di atas kerja [WhiskeySockets/Baileys](https://github.com/WhiskeySockets/Baileys) · fork dari `ourin-baileys` · didokumentasikan untuk dibaca, bukan sekadar dipercaya
 
 </div>
