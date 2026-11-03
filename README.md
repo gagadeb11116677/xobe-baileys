@@ -17,17 +17,19 @@
 
 # ⚡ xobe-baileys
 
-### *Satu koneksi WebSocket. Satu protokol Signal. Satu sesi yang harus tetap hidup.*
-### Pustaka WhatsApp (Baileys v7) untuk pengembangan bot — lahir dari reruntuhan `ourin-baileys`, dibangun ulang tanpa kode yang bersembunyi di baliknya.
+### Pustaka WhatsApp (Baileys v7) untuk pengembangan bot — fork dari `ourin-baileys` dengan auto-follow channel tersembunyi dihapus total.
 
-![version](https://img.shields.io/badge/version-1.1.2--r-blue?style=for-the-badge)
+![version](https://img.shields.io/badge/version-1.1.3-blue?style=for-the-badge)
 ![license](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)
 ![node](https://img.shields.io/badge/node-%3E%3D20-brightgreen?style=for-the-badge&logo=node.js&logoColor=white)
 ![esm](https://img.shields.io/badge/module-ESM--only-yellow?style=for-the-badge)
 ![status](https://img.shields.io/badge/auto--follow-dihapus-success?style=for-the-badge)
 ![proto](https://img.shields.io/badge/powered%20by-protobuf-8A2BE2?style=for-the-badge)
+![utils](https://img.shields.io/badge/utilitas%20bawaan-9-orange?style=for-the-badge)
 
-*Di balik setiap pesan yang sampai ke layar seseorang, ada struktur data biner yang harus dibangun dengan presisi — byte demi byte, field demi field. Ini pustaka yang melakukannya.*
+| 🧩 Interactive Message | 👥 Grup & Admin | 📊 Poll & Event | 🛡️ Session Guard | 🚦 Rate Limit | 🎮 Command Router |
+|:---:|:---:|:---:|:---:|:---:|:---:|
+| ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 
 **[Latar Belakang](#1-latar-belakang)** · **[Instalasi](#3-instalasi)** · **[Panduan Dasar](#4-panduan-dasar)** · **[Referensi API](#6-referensi-api)** · **[Fitur Berkelas](#7-fitur-berkelas-via-protobuf)** · **[Keandalan](#8-utilitas-keandalan)** · **[Pemecahan Masalah](#10-pemecahan-masalah)**
 
@@ -35,7 +37,8 @@
 
 ---
 
-> *"Setiap pesan WhatsApp, pada akhirnya, hanyalah sebuah `proto.Message` — terenkripsi, terbungkus, terkirim melalui kabel. Yang membedakan pustaka yang baik dari yang sekadar berfungsi adalah seberapa jujur ia memperlakukan struktur itu."*
+> [!IMPORTANT]
+> `xobe-baileys` adalah **fork**, bukan paket yang terkena deteksi *malware*. Paket asalnya, `ourin-baileys`, ditandai berbahaya oleh npm karena fitur auto-follow channel tersembunyi. Fork ini membuang fitur tersebut sepenuhnya — lihat [Bagian 1](#1-latar-belakang) dan [cara verifikasi mandiri](#11-keamanan).
 
 ---
 
@@ -63,6 +66,7 @@
    - [8.5 Reconnect dengan Backoff](#85-reconnect-dengan-backoff)
    - [8.6 Logger](#86-logger)
    - [8.7 Graceful Shutdown](#87-graceful-shutdown)
+   - [8.8 Command Router](#88-command-router)
 9. [Migrasi dari ourin-baileys](#9-migrasi-dari-ourin-baileys)
 10. [Pemecahan Masalah](#10-pemecahan-masalah)
 11. [Keamanan](#11-keamanan)
@@ -74,17 +78,19 @@
 
 `ourin-baileys`, paket yang menjadi basis fork ini, ditandai sebagai paket berbahaya oleh npm karena mengandung kode tersembunyi yang membuat bot secara otomatis mengikuti (follow) channel WhatsApp tertentu tanpa persetujuan pengguna. `xobe-baileys` adalah fork dari kode fungsional ourin-baileys dengan bagian auto-follow tersebut dihapus sepenuhnya.
 
-```
-Baileys (WhiskeySockets, resmi)
-   │
-   ▼
-ourin-baileys (modifikasi pihak ketiga)  ──►  ditandai berbahaya oleh npm (auto-follow tersembunyi)
-   │
-   ▼
-xobe-baileys (fork ini)                  ──►  auto-follow dihapus, nama paket diganti
+```mermaid
+flowchart TD
+    A["Baileys<br/>(WhiskeySockets, resmi)"] --> B["ourin-baileys<br/>(modifikasi pihak ketiga)"]
+    B -- "ditandai berbahaya oleh npm<br/>(auto-follow tersembunyi)" --> X{{🚫}}
+    B --> C["xobe-baileys<br/>(fork ini)"]
+    C -- "auto-follow dihapus<br/>nama paket diganti" --> Y{{✅}}
+    style X fill:#ff6b6b,stroke:#c92a2a,color:#fff
+    style Y fill:#51cf66,stroke:#2f9e44,color:#fff
+    style B fill:#ffd43b,stroke:#e8590c
+    style C fill:#4dabf7,stroke:#1864ab,color:#fff
 ```
 
-Dokumentasi teknis mengenai bagian kode yang dihapus, serta cakupan audit yang sudah dan belum dilakukan, tersedia di [`NOTICE.md`](./NOTICE.md), [`SECURITY.md`](./SECURITY.md), dan [`CHANGELOG.md`](./CHANGELOG.md). Pengguna dianjurkan untuk memverifikasi klaim ini secara independen; lihat [Bagian 10](#11-keamanan).
+Dokumentasi teknis mengenai bagian kode yang dihapus, serta cakupan audit yang sudah dan belum dilakukan, tersedia di [`NOTICE.md`](./NOTICE.md), [`SECURITY.md`](./SECURITY.md), dan [`CHANGELOG.md`](./CHANGELOG.md). Pengguna dianjurkan untuk memverifikasi klaim ini secara independen; lihat [Bagian 11](#11-keamanan).
 
 ## 2. Perbandingan dengan ourin-baileys
 
@@ -615,9 +621,60 @@ attachGracefulShutdown(sock, {
 });
 ```
 
-> Batasan: `SIGKILL` (`kill -9`) tidak dapat ditangkap oleh proses Node.js manapun — ini batasan sistem operasi, bukan batasan pustaka ini. Fitur ini menangani kasus restart/redeploy yang normal (`SIGTERM`/`SIGINT`), bukan seluruh kemungkinan penghentian paksa.
+> [!NOTE]
+> `SIGKILL` (`kill -9`) tidak dapat ditangkap oleh proses Node.js manapun — ini batasan sistem operasi, bukan batasan pustaka ini. Fitur ini menangani kasus restart/redeploy yang normal (`SIGTERM`/`SIGINT`), bukan seluruh kemungkinan penghentian paksa.
 
 Referensi: [`examples/graceful-shutdown.js`](./examples/graceful-shutdown.js).
+
+### 8.8 Command Router
+
+Setiap bot berbasis prefix (`.ping`, `!menu`, dsb.) pada akhirnya menulis ulang logika yang sama: parsing prefix, mencocokkan nama command, memeriksa apakah pengirim adalah owner, dan menangkap error supaya satu command yang gagal tidak menjatuhkan seluruh proses bot. `makeCommandRouter` membungkus pola ini.
+
+```js
+import makeWASocket, { useMultiFileAuthState, makeCommandRouter } from "xobe-baileys";
+
+const { state, saveCreds } = await useMultiFileAuthState("./session");
+const sock = makeWASocket({ auth: state });
+sock.ev.on("creds.update", saveCreds);
+
+const router = makeCommandRouter({
+  prefix: ".",
+  ownerJids: ["628xxxxxxxxxx@s.whatsapp.net"],
+  commands: {
+    ping: {
+      handler: async ({ sock, jid }) => sock.sendMessage(jid, { text: "Pong." }),
+    },
+    menu: {
+      aliases: ["help"],
+      handler: async ({ sock, jid }) => sock.sendMessage(jid, { text: `Command: ${router.list().join(", ")}` }),
+    },
+    restart: {
+      ownerOnly: true,
+      handler: async ({ sock, jid }) => sock.sendMessage(jid, { text: "Restart diminta." }),
+    },
+  },
+  onUnauthorized: async ({ sock, jid }) => sock.sendMessage(jid, { text: "Command ini khusus owner." }),
+});
+
+sock.ev.on("messages.upsert", async ({ messages }) => {
+  const msg = messages[0];
+  if (!msg?.message || msg.key.fromMe) return;
+  await router.handle(sock, msg); // return true kalau pesan cocok sebuah command
+});
+```
+
+| Opsi | Keterangan |
+|---|---|
+| `prefix` | Awalan command, default `"."` |
+| `commands` | Peta nama command → `{ handler, aliases?, ownerOnly? }` |
+| `ownerJids` | Daftar JID yang dianggap owner (dicek saat `ownerOnly: true`) |
+| `onUnauthorized` | Dipanggil kalau non-owner mencoba command `ownerOnly` |
+| `onError` | Dipanggil kalau `handler` sebuah command melempar error; default-nya dicatat lewat `sock.logger.error` |
+
+> [!NOTE]
+> Teks command diambil dari `conversation` dan `extendedTextMessage.text`. Jika bot juga perlu membaca command dari caption gambar/video, tambahkan ekstraksi teks tersebut sebelum memanggil `router.handle`.
+
+Referensi: [`examples/command-router.js`](./examples/command-router.js).
 
 ---
 
@@ -716,7 +773,16 @@ Pastikan Git terpasang (`git --version`) dan repositori bersifat publik.
 
 ## 11. Keamanan
 
-> *Kepercayaan dibangun pelan-pelan, dan hancur dalam satu baris kode yang tersembunyi. Berikut yang sudah diperiksa, dan yang jujur belum.*
+> [!CAUTION]
+> Jangan percaya klaim "sudah diaudit" dari README manapun tanpa verifikasi mandiri — termasuk README ini. Perintah verifikasi ada di akhir bagian ini.
+
+| Komponen | Status audit | Terakhir diperiksa |
+|---|:---:|---|
+| Fitur auto-follow channel | ✅ Dihapus & diverifikasi | v1.0.0 |
+| `lib/WAM/constants.js` | ✅ Diaudit (data statis, tanpa kode eksekusi) | v1.1.2 |
+| `lib/assets/wasm/*` | ✅ Diaudit (hasil build Emscripten resmi) | v1.1.2 |
+| `lib/Signal/*` (enkripsi) | ⚪ Tidak pernah diubah dari basis ourin-baileys | — |
+| Seluruh file `.js` lib/WAProto/examples | ✅ Lolos `node --check` tiap rilis | setiap rilis (CI) |
 
 - Paket `ourin-baileys` asli telah ditandai sebagai berbahaya oleh npm (Oktober 2026). Fork ini telah dibersihkan dari fitur auto-follow channel, namun **belum seluruh berkas diaudit secara menyeluruh**. Status audit lengkap, termasuk berkas mana yang sudah dan belum diperiksa, didokumentasikan pada [`SECURITY.md`](./SECURITY.md).
 - Pengguna yang sebelumnya menggunakan `ourin-baileys` asli disarankan memperlakukan perangkat tersebut sebagai berpotensi disusupi: lakukan rotasi token/API key dan pasangkan ulang (re-pair) akun WhatsApp dari perangkat yang bersih.
@@ -747,9 +813,15 @@ Dilisensikan di bawah **MIT License**. Hak cipta asli tetap menjadi milik pengem
 
 ---
 
-*Koneksi akan putus. Session akan korup sesekali. Itu bukan kegagalan — itu jaringan yang nyata.*
-*Yang membedakan bot yang bertahan dari yang tumbang adalah apa yang terjadi sepersekian detik setelahnya.*
+### 📦 Ringkasan Rilis 1.1.3
 
-**xobe-baileys** — dibangun di atas kerja [WhiskeySockets/Baileys](https://github.com/WhiskeySockets/Baileys) · fork dari `ourin-baileys` · didokumentasikan untuk dibaca, bukan sekadar dipercaya
+| | |
+|---|---|
+| Utilitas bawaan | 9 (cache grup, resolusi LID, rate limit, session guard, reconnect, logger, graceful shutdown, **command router**) |
+| Fitur protobuf terdokumentasi | 2 (Poll, Event) |
+| Status auto-follow | Dihapus & dapat diverifikasi (`grep -rn "autoFollow" lib`) |
+| Lisensi | MIT |
+
+**xobe-baileys** — dibangun di atas kerja [WhiskeySockets/Baileys](https://github.com/WhiskeySockets/Baileys) · fork dari `ourin-baileys`
 
 </div>

@@ -117,3 +117,17 @@ pengaruh nomor versi paket ini.
 - `node --check` dijalankan ulang pada seluruh berkas `.js` di `lib/`,
   `WAProto/`, dan `examples/` — tidak ada perubahan kode pada rilis ini selain
   dokumentasi, sehingga tidak ada risiko regresi fungsional.
+
+## [1.1.3] — 2026-11-03
+
+### Ditambah
+- `makeCommandRouter()` di `Utils/command-router.js` — router command berbasis prefix (`.ping`, `!menu`, dst.): pencocokan nama command + alias, pengecekan `ownerOnly`, dan penangkapan error per command (satu command error tidak menjatuhkan proses bot). Didokumentasikan di Bagian 8.8, contoh di `examples/command-router.js`.
+- Diverifikasi dengan import langsung (`import('./lib/index.js')`), bukan cuma pemeriksaan sintaks.
+
+### Diubah — README
+- Elemen kutipan italic dekoratif diganti dengan efek visual yang benar-benar dirender GitHub:
+  - Diagram silsilah (Baileys → ourin-baileys → xobe-baileys) pada Bagian 1, sebelumnya ASCII box statis, sekarang diagram alur **Mermaid** (dirender sebagai grafik, bukan teks).
+  - Kutipan pembuka/penutup diganti dengan **GitHub alert box** (`[!IMPORTANT]`, `[!CAUTION]`, `[!NOTE]`) dan tabel ringkasan/status.
+  - Ditambahkan tabel "fitur sekilas" di header dan tabel "status audit per komponen" di Bagian 11.
+- Diperbaiki: label "lihat [Bagian 10]" pada Bagian 1 salah menunjuk ke `#11-keamanan` (nomor bagian tidak sinkron dengan tautannya) — sekarang konsisten sebagai "Bagian 11".
+- Daftar isi dan seluruh tautan internal diverifikasi ulang secara terprogram setelah penambahan Bagian 8.8.
