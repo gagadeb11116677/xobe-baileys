@@ -19,17 +19,17 @@
 
 ### Pustaka WhatsApp (Baileys v7) untuk pengembangan bot — fork dari `ourin-baileys` dengan auto-follow channel tersembunyi dihapus total.
 
-![version](https://img.shields.io/badge/version-1.1.3-blue?style=for-the-badge)
+![version](https://img.shields.io/badge/version-1.1.4-blue?style=for-the-badge)
 ![license](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)
 ![node](https://img.shields.io/badge/node-%3E%3D20-brightgreen?style=for-the-badge&logo=node.js&logoColor=white)
 ![esm](https://img.shields.io/badge/module-ESM--only-yellow?style=for-the-badge)
 ![status](https://img.shields.io/badge/auto--follow-dihapus-success?style=for-the-badge)
 ![proto](https://img.shields.io/badge/powered%20by-protobuf-8A2BE2?style=for-the-badge)
-![utils](https://img.shields.io/badge/utilitas%20bawaan-9-orange?style=for-the-badge)
+![utils](https://img.shields.io/badge/utilitas%20bawaan-10-orange?style=for-the-badge)
 
-| 🧩 Interactive Message | 👥 Grup & Admin | 📊 Poll & Event | 🛡️ Session Guard | 🚦 Rate Limit | 🎮 Command Router |
-|:---:|:---:|:---:|:---:|:---:|:---:|
-| ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 🧩 Interactive Message | 👥 Grup & Admin | 📊 Poll & Event | 🛡️ Session Guard | 🚦 Rate Limit | 🎮 Command Router | 🪪 Dedupe Pesan |
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 
 **[Latar Belakang](#1-latar-belakang)** · **[Instalasi](#3-instalasi)** · **[Panduan Dasar](#4-panduan-dasar)** · **[Referensi API](#6-referensi-api)** · **[Fitur Berkelas](#7-fitur-berkelas-via-protobuf)** · **[Keandalan](#8-utilitas-keandalan)** · **[Pemecahan Masalah](#10-pemecahan-masalah)**
 
@@ -67,6 +67,7 @@
    - [8.6 Logger](#86-logger)
    - [8.7 Graceful Shutdown](#87-graceful-shutdown)
    - [8.8 Command Router](#88-command-router)
+   - [8.9 Dedupe Pesan (Anti Duplikat)](#89-dedupe-pesan-anti-duplikat)
 9. [Migrasi dari ourin-baileys](#9-migrasi-dari-ourin-baileys)
 10. [Pemecahan Masalah](#10-pemecahan-masalah)
 11. [Keamanan](#11-keamanan)
@@ -676,6 +677,32 @@ sock.ev.on("messages.upsert", async ({ messages }) => {
 
 Referensi: [`examples/command-router.js`](./examples/command-router.js).
 
+### 8.9 Dedupe Pesan (Anti Duplikat)
+
+WhatsApp dapat mengirim ulang pesan yang sama lewat event `messages.upsert` — paling sering terjadi saat bot baru selesai *reconnect* setelah koneksi sempat terputus. Tanpa penanganan, ini membuat bot membalas pesan yang sama dua kali atau lebih, yang dari sisi pengguna terlihat seperti bug acak.
+
+```js
+import { makeMessageDedupe } from "xobe-baileys";
+
+const dedupe = makeMessageDedupe({ ttlMs: 10 * 60_000 }); // lacak 10 menit terakhir
+
+sock.ev.on("messages.upsert", dedupe.wrapHandler(async ({ messages }) => {
+  // "messages" di sini sudah difilter, tidak ada id yang sama dua kali
+  const msg = messages[0];
+  // ...proses seperti biasa
+}));
+```
+
+| Opsi | Keterangan |
+|---|---|
+| `max` | Jumlah maksimum id pesan yang dilacak sekaligus (default `1000`) |
+| `ttlMs` | Berapa lama id pesan diingat sebelum dianggap kedaluwarsa (default 10 menit) |
+
+> [!NOTE]
+> Ini mengatasi **satu kelas bug spesifik** (pesan terduplikasi akibat redelivery dari WhatsApp), bukan solusi umum untuk "semua error". Penyebab error lain pada bot — kesalahan logika command, dependensi yang hilang, dsb. — tetap perlu ditangani masing-masing sesuai kasusnya.
+
+Referensi: [`examples/message-dedupe.js`](./examples/message-dedupe.js).
+
 ---
 
 ## 9. Migrasi dari ourin-baileys
@@ -817,7 +844,7 @@ Dilisensikan di bawah **MIT License**. Hak cipta asli tetap menjadi milik pengem
 
 | | |
 |---|---|
-| Utilitas bawaan | 9 (cache grup, resolusi LID, rate limit, session guard, reconnect, logger, graceful shutdown, **command router**) |
+| Utilitas bawaan | 10 (cache grup, resolusi LID, rate limit, session guard, reconnect, logger, graceful shutdown, command router, **dedupe pesan**) |
 | Fitur protobuf terdokumentasi | 2 (Poll, Event) |
 | Status auto-follow | Dihapus & dapat diverifikasi (`grep -rn "autoFollow" lib`) |
 | Lisensi | MIT |

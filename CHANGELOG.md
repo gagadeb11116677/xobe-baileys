@@ -131,3 +131,17 @@ pengaruh nomor versi paket ini.
   - Ditambahkan tabel "fitur sekilas" di header dan tabel "status audit per komponen" di Bagian 11.
 - Diperbaiki: label "lihat [Bagian 10]" pada Bagian 1 salah menunjuk ke `#11-keamanan` (nomor bagian tidak sinkron dengan tautannya) — sekarang konsisten sebagai "Bagian 11".
 - Daftar isi dan seluruh tautan internal diverifikasi ulang secara terprogram setelah penambahan Bagian 8.8.
+
+## [1.1.4] — 2026-11-03
+
+### Ditambah
+- `makeMessageDedupe()` di `Utils/message-dedupe.js` — mencegah bot memproses/membalas pesan yang sama dua kali akibat redelivery WhatsApp (umumnya terjadi saat reconnect). Didokumentasikan di Bagian 8.9, contoh di `examples/message-dedupe.js`.
+
+### Audit
+- Diverifikasi: semantik `null` pada `authState.keys.set({ session: { [addr]: null } })` yang dipakai `attachSessionGuard` (v1.1.1) memang berarti "hapus entri" pada `useMultiFileAuthState` (`value ? writeData(...) : removeData(...)`) — dikonfirmasi benar, bukan bug.
+- Seluruh 11 fungsi utilitas (v1.0.0–1.1.4) diverifikasi lewat import langsung ke paket (`import('./lib/index.js')`), bukan hanya pemeriksaan sintaks statis.
+- Konsistensi dokumen (`package.json`, `LICENSE`, `SECURITY.md`, `CHANGELOG.md`) diperiksa ulang; tidak ditemukan versi yang saling bertentangan.
+
+### Catatan jujur soal keterbatasan
+- "Anti error" secara mutlak tidak realistis untuk perangkat lunak apa pun dan tidak diklaim di sini — fitur baru pada rilis ini menangani satu kelas bug spesifik (pesan terduplikasi), bukan seluruh kemungkinan error.
+- README tidak menyertakan animasi (GIF/video) karena memerlukan berkas media yang di-hosting; GitHub Markdown secara teknis tidak mendukung animasi selain lewat berkas media semacam itu. Diagram Mermaid dan badge (sudah ada sejak v1.1.3) adalah elemen visual dinamis yang didukung secara native.

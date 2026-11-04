@@ -28,3 +28,4 @@ export * from "./reconnect.js";
 export * from "./session-guard.js";
 export * from "./graceful-shutdown.js";
 export * from "./command-router.js";
+export * from "./message-dedupe.js";
