@@ -1,11 +1,19 @@
 {
   "name": "xobe-baileys",
   "type": "module",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "xobe-baileys: fork Baileys v7 mod (interactive message, album, newsletter, VoIP) tanpa auto-follow channel",
   "license": "MIT",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "import": "./lib/index.js",
+      "default": "./lib/index.js"
+    },
+    "./package.json": "./package.json"
+  },
   "files": [
     "lib/**/*",
     "WAProto/**/*"

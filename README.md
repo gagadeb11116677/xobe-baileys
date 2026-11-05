@@ -1,25 +1,14 @@
 <div align="center">
 
-```
-╔══════════════════════════════════════════════════════════════╗
-║                                                                ║
-║     ██╗  ██╗ ██████╗ ██████╗ ███████╗                        ║
-║     ╚██╗██╔╝██╔═══██╗██╔══██╗██╔════╝                        ║
-║      ╚███╔╝ ██║   ██║██████╔╝█████╗                          ║
-║      ██╔██╗ ██║   ██║██╔══██╗██╔══╝                          ║
-║     ██╔╝ ██╗╚██████╔╝██████╔╝███████╗                        ║
-║     ╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚══════╝                        ║
-║                                                                ║
-║              B  A  I  L  E  Y  S                              ║
-║                                                                ║
-╚══════════════════════════════════════════════════════════════╝
-```
+<img width="100%" src="https://capsule-render.vercel.app/api?type=waving&color=0:4dabf7,100:1864ab&height=180&section=header&text=xobe-baileys&fontSize=60&fontColor=ffffff&animation=fadeIn&fontAlignY=38&desc=WhatsApp%20Bot%20Library%20%E2%80%94%20Fork%20Bersih%20dari%20ourin-baileys&descAlignY=58&descSize=18" alt="xobe-baileys banner" />
+
+[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=22&pause=1200&color=4DABF7&center=true&vCenter=true&width=600&lines=Fork+bersih+dari+ourin-baileys;Auto-follow+channel%3A+dihapus+total;Session+guard+%2B+graceful+shutdown;Command+router+%2B+anti-duplikat+pesan;Dibangun+langsung+di+atas+protobuf)](https://github.com/gagadeb11116677/xobe-baileys)
 
 # ⚡ xobe-baileys
 
 ### Pustaka WhatsApp (Baileys v7) untuk pengembangan bot — fork dari `ourin-baileys` dengan auto-follow channel tersembunyi dihapus total.
 
-![version](https://img.shields.io/badge/version-1.1.4-blue?style=for-the-badge)
+![version](https://img.shields.io/badge/version-1.1.5-blue?style=for-the-badge)
 ![license](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)
 ![node](https://img.shields.io/badge/node-%3E%3D20-brightgreen?style=for-the-badge&logo=node.js&logoColor=white)
 ![esm](https://img.shields.io/badge/module-ESM--only-yellow?style=for-the-badge)
@@ -840,15 +829,18 @@ Dilisensikan di bawah **MIT License**. Hak cipta asli tetap menjadi milik pengem
 
 ---
 
-### 📦 Ringkasan Rilis 1.1.3
+### 📦 Ringkasan Rilis 1.1.5
 
 | | |
 |---|---|
-| Utilitas bawaan | 10 (cache grup, resolusi LID, rate limit, session guard, reconnect, logger, graceful shutdown, command router, **dedupe pesan**) |
+| Utilitas bawaan | 10 (cache grup, resolusi LID, rate limit, session guard, reconnect, logger, graceful shutdown, command router, dedupe pesan) |
 | Fitur protobuf terdokumentasi | 2 (Poll, Event) |
+| `package.json` `exports` field | ✅ Ditambahkan (perbaikan resolusi TypeScript modern) |
 | Status auto-follow | Dihapus & dapat diverifikasi (`grep -rn "autoFollow" lib`) |
 | Lisensi | MIT |
 
 **xobe-baileys** — dibangun di atas kerja [WhiskeySockets/Baileys](https://github.com/WhiskeySockets/Baileys) · fork dari `ourin-baileys`
 
 </div>
+
+<img width="100%" src="https://capsule-render.vercel.app/api?type=waving&color=0:1864ab,100:4dabf7&height=120&section=footer" alt="footer" />

@@ -145,3 +145,15 @@ pengaruh nomor versi paket ini.
 ### Catatan jujur soal keterbatasan
 - "Anti error" secara mutlak tidak realistis untuk perangkat lunak apa pun dan tidak diklaim di sini — fitur baru pada rilis ini menangani satu kelas bug spesifik (pesan terduplikasi), bukan seluruh kemungkinan error.
 - README tidak menyertakan animasi (GIF/video) karena memerlukan berkas media yang di-hosting; GitHub Markdown secara teknis tidak mendukung animasi selain lewat berkas media semacam itu. Diagram Mermaid dan badge (sudah ada sejak v1.1.3) adalah elemen visual dinamis yang didukung secara native.
+
+## [1.1.5] — 2026-11-04
+
+### Diperbaiki (ditemukan lewat audit `package.json`)
+- `package.json` tidak memiliki field `"exports"`. Tanpa ini, konsumen TypeScript dengan konfigurasi modern (`moduleResolution: "node16"` atau `"bundler"`, umum pada setup Next.js/Vite terbaru) berpotensi gagal me-resolve tipe meskipun field `"main"` dan `"types"` sudah benar. Ditambahkan `"exports"` dengan kondisi `types`/`import`/`default` yang eksplisit. Diverifikasi tidak mematahkan resolusi import yang sudah berjalan (`import('./lib/index.js')` diuji ulang setelah perubahan).
+
+### Diubah — README
+- Banner ASCII statis diganti dengan header animasi dari **capsule-render** (SVG yang digenerate dari parameter URL, bukan gambar yang disalin dari pihak lain) dan teks animasi dari **readme-typing-svg**. Footer juga ditambahkan dengan elemen serupa.
+- Catatan: permintaan untuk menyertakan GIF dari hasil pencarian internet tidak dipenuhi apa adanya — lisensi/hak cipta gambar hasil pencarian tidak dapat diverifikasi, dan menyalin aset milik pihak lain ke repositori publik berisiko dari sisi hak cipta. `capsule-render` dan `readme-typing-svg` dipilih sebagai alternatif karena keduanya men-generate SVG baru per permintaan (bukan menyalin aset), sehingga tidak ada isu lisensi.
+
+### Audit
+- Seluruh file `.js` lolos `node --check`; seluruh 12 fungsi utilitas diverifikasi tetap dapat di-import setelah perubahan `exports` field.
